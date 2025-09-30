@@ -21,7 +21,7 @@ const config = {
 
   // Set the production url of your site here
   url: 'https://dphi-space.github.io',
-  baseUrl: '/',
+  baseUrl: '/public-documentation/',
   projectName: 'dphi-space.github.io',
   organizationName: 'dphi-space',
   trailingSlash: false,
