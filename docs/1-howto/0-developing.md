@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-# Developing Locally with Docker for Clustergate-2
+# Local Development
 
 Clustergate-2 runs Docker containers in space, so the best way to develop and test your application is to build it as a Docker container **locally on your laptop**, and optionally test it on an **ARM64-based device** like a Raspberry Pi before deployment.
 
