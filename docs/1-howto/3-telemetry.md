@@ -86,7 +86,7 @@ Example JSON for a Telemetry Record
 }
 ```
 
-Example Workflow
+## Example Workflow
 
 1. Check API status
 
@@ -124,7 +124,7 @@ curl "$BASE_URL/api/telemetry/tle"
 ```
 Returns telemetry stats or latest TLE string.
 
-### Error Handling
+## Error Handling
 
 Errors are returned with `success: false`, and informative messages in the `error` field:
 
