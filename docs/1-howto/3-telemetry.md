@@ -2,9 +2,18 @@
 
 ## API Overview
 
-The API provides telemetry access for satellite data, exposing endpoints to query historic and latest telemetry records, power stats, supported data types, and TLE information. It uses axum for routing and serde models for JSON serialization.
+The API provides telemetry access for satellite data, exposing endpoints to query historic and latest telemetry records, power stats, supported data types, and TLE information. It uses [axum](https://docs.rs/axum/latest/axum/) for routing and [serde](https://serde.rs/) models for JSON serialization.
 
-### Base endpoints
+### Base URL 
+The base url for evey request is the following:
+
+```bash
+http://satellite-telemetry.dphi-tm:8080
+```
+
+It will be referred to as `BASE_URL` in the rest of the documentation.
+
+### Base Endpoints
 
 | Endpoint | HTTP Verb | Purpose |
 | -------- | -------- | -------- |
@@ -20,7 +29,7 @@ The API provides telemetry access for satellite data, exposing endpoints to quer
 
 ## Request Parameters
 
-Most query endpoints accept parameters in the query string, captured as TelemetryQueryParams:
+Most query endpoints accept parameters in the query string, captured as `TelemetryQueryParams`:
 - `starttime` (`Option<String>`): RFC3339 start timestamp
 - `endtime` (`Option<String>`): RFC3339 end timestamp
 - `datatype` (`Option<String>`): type of telemetry (e.g., "temperature", "power")
@@ -29,7 +38,7 @@ Most query endpoints accept parameters in the query string, captured as Telemetr
 Example curl for telemetry data:
 
 ```bash
-curl "http://satellite-telemetry.dphi-tm:8080/api/telemetry?starttime=2025-01-01T00:00:00Z&endtime=2025-01-02T00:00:00Z&datatype=temperature&limit=10"
+curl "$BASE_URL/api/telemetry?starttime=2025-01-01T00:00:00Z&endtime=2025-01-02T00:00:00Z&datatype=temperature&limit=10"
 ```
 
 ## Response Format
@@ -82,36 +91,36 @@ Example Workflow
 1. Check API status
 
 ```bash
-curl "http://satellite-telemetry.dphi-tm:8080/health"
+curl "$BASE_URL/health"
 ```
 Returns service status and timestamp.
 
 2. List available types
 
 ```bash
-curl "http://satellite-telemetry.dphi-tm:8080/api/telemetry/types"
+curl "$BASE_URL/api/telemetry/types"
 ```
 Returns all supported telemetry types.
 
 3. Get telemetry records
 
 ```bash
-curl "http://satellite-telemetry.dphi-tm:8080/api/telemetry?datatype=temperature&limit=5"
+curl "$BASE_URL/api/telemetry?datatype=temperature&limit=5"
 ```
 Returns latest 5 temperature records.
 
 4. Get only power telemetry
 
 ```bash
-curl "http://satellite-telemetry.dphi-tm:8080/api/telemetry/power?limit=3"
+curl "$BASE_URL/api/telemetry/power?limit=3"
 ```
 Returns power telemetry records.
 
 5. Fetch stats or latest TLE
 
 ```bash
-curl "http://satellite-telemetry.dphi-tm:8080/api/telemetry/stats"
-curl "http://satellite-telemetry.dphi-tm:8080/api/telemetry/tle"
+curl "$BASE_URL/api/telemetry/stats"
+curl "$BASE_URL/api/telemetry/tle"
 ```
 Returns telemetry stats or latest TLE string.
 

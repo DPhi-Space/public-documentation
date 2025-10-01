@@ -2,6 +2,8 @@
 
 Clustergate-2 runs Docker containers in space, so the best way to develop and test your application is to build it as a Docker container **locally on your laptop**, and optionally test it on an **ARM64-based device** like a Raspberry Pi before deployment.
 
+All the examples below can be found under `examples/simple-docker/` folder
+
 ---
 
 ### Step 1: Install Docker on Your Laptop
@@ -20,7 +22,7 @@ docker --version
 
 ### Step 2: Create a Simple Dockerfile
 
-Clustergate-2 has a list of loaded Docker images developers can use as a base for their own images. Check it out in the Docker images section. Below is an example of Dockerfile for a simple python application:
+Clustergate-2 has a list of loaded Docker images developers can use as a base for their own images. Check it out in the [Docker Best Practices in Space](/docs/2-specs/docker-imgs.md) section. Below is an example of Dockerfile for a simple python application:
 
 ```Dockerfile
 FROM python:3.10-slim
@@ -37,11 +39,10 @@ CMD ["python", "main.py"]
 
 Save this as `Dockerfile` in your project folder.
 
-Your folder structure might look like:
+Your folder structure should look like:
 
 ```
-earth-observation-app/
-│
+simple-docker/
 ├── main.py
 └── Dockerfile
 ```
@@ -52,13 +53,13 @@ Remember that, given that the system is air-gapped, no updates requiring interne
 
 ### Step 3: Build and Run Locally 
 
-You can build the image for your laptop's architecture by running the following:
+You can build the image for your laptop's architecture by running the following in the `simple-docker/` directory:
 
 ```bash
 docker build  -t my-arm-app .
 ```
 
-Run it locally:
+To run it locally, just do:
 
 ```bash
 docker run --rm my-arm-app
