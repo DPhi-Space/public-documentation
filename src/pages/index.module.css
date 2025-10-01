@@ -1,23 +1,201 @@
-/**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
- */
+/* Base page wrapper with dark space theme */
+.pageWrapper {
+  background: linear-gradient(to bottom, #000000, #0a0a0f);
+  min-height: 100vh;
+}
 
+/* Hero Section */
 .heroBanner {
-  padding: 4rem 0;
+  padding: 8rem 2rem 6rem;
   text-align: center;
-  position: relative;
-  overflow: hidden;
+  background: radial-gradient(ellipse at top, rgba(30, 30, 60, 0.3), transparent);
 }
 
-@media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
-  }
+.heroContainer {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.buttons {
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.heroSubtitle {
+  font-size: 1.25rem;
+  color: #a1a1aa;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Feature Highlight Section */
+.featureSection {
+  padding: 4rem 2rem;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.featureCard {
+  background: #0a0a0f;
+  border: 1px solid #27272a;
+  border-radius: 12px;
+  padding: 3rem;
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  transition: border-color 0.3s ease;
+}
+
+.featureCard:hover {
+  border-color: #3f3f46;
+}
+
+.featureIcon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #ffffff;
+}
+
+.featureContent {
+  flex: 1;
+}
+
+.featureTitle {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+}
+
+.featureDescription {
+  font-size: 1rem;
+  color: #a1a1aa;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.featureStats {
+  display: flex;
+  gap: 3rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Jump In Section */
+.jumpInSection {
+  padding: 4rem 2rem 8rem;
+}
+
+.jumpInTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.jumpInGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.jumpInCard {
+  background: #0a0a0f;
+  border: 1px solid #27272a;
+  border-radius: 12px;
+  padding: 2rem;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: all 0.3s ease;
+}
+
+.jumpInCard:hover {
+  border-color: #3f3f46;
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.jumpInIcon {
+  width: 40px;
+  height: 40px;
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.jumpInCardTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.jumpInCardDescription {
+  font-size: 0.9375rem;
+  color: #a1a1aa;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .heroTitle {
+    font-size: 2.5rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1.125rem;
+  }
+
+  .featureCard {
+    flex-direction: column;
+    padding: 2rem;
+  }
+
+  .featureStats {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .jumpInGrid {
+    grid-template-columns: 1fr;
+  }
 }
