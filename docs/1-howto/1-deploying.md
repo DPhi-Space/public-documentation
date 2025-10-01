@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
-
 # Deploying to Space
 
 As previously mentioned, the system is air-gapped, meaning it does not have direct access to the internet or external networks. Because of this, updating Docker images must be handled differently compared to development environments on the ground. Instead of pulling images from remote registries, updates must be prepared, packaged, and transferred through a controlled uplink process.

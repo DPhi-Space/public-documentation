@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
-
 # Docker Best Practices in Space
 
 This guide outlines best practices for building Docker containers optimized for use on **Clustergate-2**, considering the unique constraints of a space-based, air-gapped environment.

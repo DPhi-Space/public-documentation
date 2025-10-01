@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
-
 # Docker Onboard
 
 **Docker** is a platform that allows developers to package their applications and all necessary dependencies into a single, lightweight unit called a **container**. These containers can run consistently across different environments—whether on a laptop, in a data center, or onboard a satellite like Clustergate-2.

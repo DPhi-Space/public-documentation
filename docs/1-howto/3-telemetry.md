@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
-
 # Telemetry Onboard
 
 ## API Overview
