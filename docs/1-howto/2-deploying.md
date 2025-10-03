@@ -14,15 +14,19 @@ This means that:
 
 By standardizing this directory structure, Clustergate-2 ensures reliable and predictable data handling for both uplink and downlink, without requiring interactive shell access to the container itself.
 
-
 ## Building Docker Images onboard
-For instructions on how to structure and upload such an image, see the guide: How to Build a Docker Image. There are two main approaches to building Docker images for Clustergate-2: building onboard the satellite or building on the ground. Onboard builds require uplinking the Dockerfile along with all necessary binaries and dependencies while preserving the folder structure; these builds must start from one of the base images already available in space. Ground builds allow you to create fully packaged Docker images—often using multi-stage builds and cross-compilation for ARM64—and upload them as `.tar` archives for direct loading on the satellite. 
+
+For instructions on how to structure and upload such an image, see the guide: How to Build a Docker Image.
+There are two main approaches to building Docker images for Clustergate-2: building onboard the satellite or building on the ground.
+Onboard builds require uplinking the Dockerfile along with all necessary binaries and dependencies while preserving the folder structure; these builds must start from one of the base images already available in space.
+Ground builds allow you to create fully packaged Docker images—often using multi-stage builds and cross-compilation for ARM64—and upload them as `.tar` archives for direct loading on the satellite.
 
 Because Clustergate-2 operates in an air-gapped environment with no package manager access, all dependencies must be embedded at build time, and container size should be optimized for limited uplink capacity. Data input, output, and build files are handled via mounted volumes, as containers have no interactive shell access during runtime.
 
 ## Filesystem
 
-Each Docker container will have a dedicated volume mounted at `/data` by default. This mount point serves as the main interface for file exchange between your application and the Clustergate-2 system.
+Each Docker container will have a dedicated volume mounted at `/data` by default.
+This mount point serves as the main interface for file exchange between your application and the Clustergate-2 system.
 
 The default filesystem structure inside the container would look like:
 
@@ -34,30 +38,32 @@ The default filesystem structure inside the container would look like:
 └── put_here_the_files_you_want_to_transmit_to_ground
 ```
 
-#### Uplink (Earth to Satellite):
+#### Uplink (Earth to Satellite)
 
-Files uploaded via the Dashboard on the ground will be placed directly into the container’s `/data` directory. This allows you to include binaries, scripts, config files, or any other necessary data in your container runtime environment.
+Files uploaded via the Dashboard on the ground will be placed directly into the container’s `/data` directory.
+This allows you to include binaries, scripts, config files, or any other necessary data in your container runtime environment.
 
-#### Downlink (Satellite to Earth):
+#### Downlink (Satellite to Earth)
 
-To transmit files back to the ground, your application should write output files into the `/data` directory. Only this directory will be monitored for downloadable artifacts. The Dashboard will manage file retrieval using a git-like system, allowing you to fetch only updated or new files when requested.
+To transmit files back to the ground, your application should write output files into the `/data` directory.
+Only this directory will be monitored for downloadable artifacts.
+The Dashboard will manage file retrieval using a git-like system, allowing you to fetch only updated or new files when requested.
 
-#### Custom Mount Path:
+#### Custom Mount Path
 
 While `/data` is the default mount location, it can be customized during the first onboarding transfer if needed.
-
 
 ## Scheduling
 
 Clustergate-2 supports multiple ways to schedule the execution of containerized workloads. However, if you do not require scheduling, you can simply deploy your container without specifying any scheduling configuration—it will then be executed as soon as resources allow.
 
 #### Time-Based Scheduling
+
 To run your workload at a specific time, provide a timestamp in RFC3339 format. Example:
 
 ```
 2025-05-22T12:10:00+02:00
 ```
-
 
 This allows precise scheduling based on UTC time or with timezone offsets.
 
@@ -72,15 +78,16 @@ altitude: 372.0
 min_elevation: 5.0
 ```
 
-Where: 
+Where:
+
 - latitude / longitude: Target ground location.
 
 - altitude: Altitude above sea level (in meters).
 
 - min_elevation: Minimum elevation angle (in degrees) for the satellite to be considered "in view" of the target.
 
-Note: This feature is currently experimental and operates on a best-effort basis. The min_elevation threshold is not yet guaranteed to be strictly enforced.
-
+Note: This feature is currently experimental and operates on a best-effort basis.
+The min_elevation threshold is not yet guaranteed to be strictly enforced.
 
 ## Telemetry Access
 
@@ -88,7 +95,7 @@ Onboard telemetry data is available to users who require it. This includes syste
 
 Telemetry is accessed via a REST API from the running containers, which allows them to query live or recent data from the satellite.
 
-For details on available endpoints, authentication, and usage examples, see the documentation: CG2 Telemetry
+For details on available endpoints, authentication, and usage examples, see the documentation: [CG2 Telemetry](./3-telemetry.md).
 
 ## Specific Computing Needs
 

@@ -3,7 +3,8 @@ sidebar_position: 1
 ---
 
 # Docker Images Onboard
-The following table contains the list of available Docker images onboard. 
+
+The following table contains the list of available Docker images onboard.
 To locally pull and test these images, run the following:
 
 ```bash
@@ -15,7 +16,6 @@ For example, for `alpine`, run the following:
 ```bash
 docker pull alpine:3
 ```
-
 
 |Name                               |Version                                  |Image Tag                                                  |
 |-----------------------------------|-----------------------------------------|---------------------------------------------------------------|

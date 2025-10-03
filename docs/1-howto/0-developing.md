@@ -2,7 +2,7 @@
 
 Clustergate-2 runs Docker containers in space, so the best way to develop and test your application is to build it as a Docker container **locally on your laptop**, and optionally test it on an **ARM64-based device** like a Raspberry Pi before deployment.
 
-All the examples below can be found under `examples/simple-docker/` folder
+All the examples below can be found under `examples/simple-docker/` folder.
 
 ---
 
@@ -22,7 +22,9 @@ docker --version
 
 ### Step 2: Create a Simple Dockerfile
 
-Clustergate-2 has a list of loaded Docker images developers can use as a base for their own images. Check it out in the [Docker Best Practices in Space](/docs/2-specs/docker-imgs.md) section. Below is an example of Dockerfile for a simple python application:
+Clustergate-2 has a list of loaded Docker images developers can use as a base for their own images.
+Check it out in the [Docker Best Practices in Space](/docs/2-specs/docker-imgs.md) section.
+Below is an example of Dockerfile for a simple python application:
 
 ```Dockerfile
 FROM python:3.10-slim
@@ -47,11 +49,12 @@ simple-docker/
 └── Dockerfile
 ```
 
-Remember that, given that the system is air-gapped, no updates requiring internet access can be executed. Otherwise the build will fail.
+Remember that, given that the system is air-gapped, no updates requiring internet access can be executed.
+Otherwise the build will fail.
 
 ---
 
-### Step 3: Build and Run Locally 
+### Step 3: Build and Run Locally
 
 You can build the image for your laptop's architecture by running the following in the `simple-docker/` directory:
 
@@ -65,14 +68,14 @@ To run it locally, just do:
 docker run --rm my-arm-app
 ```
 
-
 ---
 
 ### Step 4: Test on a Real ARM64 Device (Raspberry Pi)
 
-If you have a **Raspberry Pi 4 or 5 running a 64-bit OS**, you can test your container natively. Even though Docker is great, sometimes there are cross-compilation caveats that happen, and it is better to catch them on the ground before executing them in space. 
+If you have a **Raspberry Pi 4 or 5 running a 64-bit OS**, you can test your container natively.
+Even though Docker is great, sometimes there are cross-compilation caveats that happen, and it is better to catch them on the ground before executing them in space.
 
-Make sure your Pi uses a 64-bit OS (such as Raspberry Pi OS 64-bit). Simply transfer the files to it, rebuild it as done locally on a laptop and run it. 
-
+Make sure your Pi uses a 64-bit OS (such as Raspberry Pi OS 64-bit).
+Simply transfer the files to it, rebuild it as done locally on a laptop and run it.
 
 ---

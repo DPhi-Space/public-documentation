@@ -4,11 +4,12 @@
 
 The API provides telemetry access for satellite data, exposing endpoints to query historic and latest telemetry records, power stats, supported data types, and TLE information. It uses [axum](https://docs.rs/axum/latest/axum/) for routing and [serde](https://serde.rs/) models for JSON serialization.
 
-### Base URL 
+### Base URL
+
 The base url for evey request is the following:
 
 ```bash
-http://satellite-telemetry.dphi-tm:8080
+http://satellite-telemetry.dphi-tm:8000
 ```
 
 It will be referred to as `BASE_URL` in the rest of the documentation.
@@ -25,11 +26,10 @@ It will be referred to as `BASE_URL` in the rest of the documentation.
 | `/api/telemetry/stats` |  GET |   Returns telemetry stats |
 | `/api/telemetry/tle` |    GET |   Latest TLE record |
 
-
-
 ## Request Parameters
 
 Most query endpoints accept parameters in the query string, captured as `TelemetryQueryParams`:
+
 - `starttime` (`Option<String>`): RFC3339 start timestamp
 - `endtime` (`Option<String>`): RFC3339 end timestamp
 - `datatype` (`Option<String>`): type of telemetry (e.g., "temperature", "power")
@@ -71,6 +71,7 @@ Responses contain telemetry data structured per the following models:
 - `TelemetryRecord`: database row including UUID, timestamp, datatype, and serialized data
 
 Example JSON for a Telemetry Record
+
 ```json
 {
   "id": "uuid-string",
@@ -93,6 +94,7 @@ Example JSON for a Telemetry Record
 ```bash
 curl "$BASE_URL/health"
 ```
+
 Returns service status and timestamp.
 
 2. List available types
@@ -100,6 +102,7 @@ Returns service status and timestamp.
 ```bash
 curl "$BASE_URL/api/telemetry/types"
 ```
+
 Returns all supported telemetry types.
 
 3. Get telemetry records
@@ -107,6 +110,7 @@ Returns all supported telemetry types.
 ```bash
 curl "$BASE_URL/api/telemetry?datatype=temperature&limit=5"
 ```
+
 Returns latest 5 temperature records.
 
 4. Get only power telemetry
@@ -114,6 +118,7 @@ Returns latest 5 temperature records.
 ```bash
 curl "$BASE_URL/api/telemetry/power?limit=3"
 ```
+
 Returns power telemetry records.
 
 5. Fetch stats or latest TLE
@@ -122,6 +127,7 @@ Returns power telemetry records.
 curl "$BASE_URL/api/telemetry/stats"
 curl "$BASE_URL/api/telemetry/tle"
 ```
+
 Returns telemetry stats or latest TLE string.
 
 ## Error Handling
