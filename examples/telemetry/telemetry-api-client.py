@@ -27,9 +27,12 @@ def fetch_from_api(api_host=API_HOST, api_port=API_PORT, output_file=OUTPUT_FILE
         all_data = {}
 
         print("Fetching health status...")
-        response = requests.get(f"{base_url}/health")
-        all_data["health"] = response.json()
-        print(f"Health: {response.json()}")
+        while True:
+            response = requests.get(f"{base_url}/health")
+            if response.ok:
+                all_data["health"] = response.json()
+                print(f"Health: {response.json()}")
+                break
 
         print("\n\n\nFetching latest telemetry...")
         response = requests.get(f"{base_url}/api/telemetry/latest")
