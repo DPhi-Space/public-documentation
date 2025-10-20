@@ -1,15 +1,12 @@
 services:
   postgres:
-    #image: postgres:17
-    image: jsilveira1409/telemetry-db 
+    image: jsilveira1409/telemetry-db
     restart: always
     environment:
       POSTGRES_DB: satellite_telemetry
       POSTGRES_USER: satellite_user
       POSTGRES_PASSWORD: satellite_pass
       PGDATA: /var/lib/postgresql/data/pgdata
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
 
   satellite-telemetry.dphi-tm:
     depends_on:
@@ -49,5 +46,3 @@ services:
 
 volumes:
   telemetry-data:
-  postgres-data:
-    driver: local
