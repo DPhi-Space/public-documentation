@@ -24,7 +24,9 @@ services:
     - RUST_BACKTRACE=1
 
   payload:
-    image: payload 
+    build: 
+      context: .
+      dockerfile: Dockerfile
     depends_on:
       - satellite-telemetry.dphi-tm
     environment:
