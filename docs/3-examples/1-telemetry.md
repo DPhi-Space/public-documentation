@@ -77,7 +77,7 @@ services:
     depends_on:
       - satellite-telemetry.dphi-tm
     environment:
-      - ENVIRONMENT=DOCKER
+    - ENVIRONMENT=DOCKER
     volumes:
       - type: bind
         source: ./
