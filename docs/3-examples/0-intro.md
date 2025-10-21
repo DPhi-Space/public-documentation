@@ -21,7 +21,7 @@ cd public-documentation
 
 ## Index of Examples
 
-1. [**Telemetry Client API**](/docs/3-examples/1-telemetry)
+1. [**Telemetry Client API**](/docs/3-examples/1-telemetry.md)
    A Python client that connects to the onboard telemetry API, fetches health, telemetry, and statistics data, and stores it locally in JSON format. It can run both **natively** or **inside Docker** and integrates directly with the onboard database and telemetry REST service.
 
 ---

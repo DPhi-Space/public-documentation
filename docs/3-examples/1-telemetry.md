@@ -22,7 +22,7 @@ All results are saved into a single JSON file (`telemetry.json`) in the current 
 
 ## Telemetry API Endpoint
 
-The API base URL is shown below, as detailed in the [Telemetry API Section](/docs/2-specs/1-telemetry), which also describes all available endpoints.
+The API base URL is shown below, as detailed in the [Telemetry API Section](/docs/2-specs/1-telemetry.md), which also describes all available endpoints.
 
 ```
 http://satellite-telemetry.dphi-tm:8000
