@@ -1,232 +1,229 @@
-# Example: Telemetry API
+# Telemetry API Client
 
-A simple Python client that fetches satellite telemetry data from the REST API onboard and saves it to a JSON file. The script exits by itself after it successfully fetches the data, otherwise it keeps polling the API until the service is up and running.
+A simple Python client that fetches **satellite telemetry data** from the onboard REST API and saves it as a JSON file.
 
-## What It Does
+The script automatically **polls the API until it becomes available**, ensuring that data retrieval only happens once the service is ready. When successful, it fetches multiple telemetry endpoints, stores the results locally, and then exits gracefully.
 
-The script fetches different data from the telemetry API onboard, such as:
+---
 
-- **Health Status** - API health check to make sure it is up and ready to provide data.
-- **Latest Telemetry** - Most recent telemetry data points.
-- **Statistics** - Database stats (record counts, time ranges)
-- **Data Types** - Available telemetry types
-- **Latest Positional Telemetry** - Latest Positional telemetry data point.
+## Features
 
-All data is saved to `telemetry.json` on the root folder from where the docker compose or the python script is run.
+The client retrieves the following data from the onboard **Telemetry API**:
 
-The script fetches the data from the satellite telemetry url, as explained in the [Telemetry Section](2-specs/1-telemetry.md):
+* **Health Status** – Confirms that the API is up and responding.
+* **Latest Telemetry** – Most recent telemetry data entries.
+* **Statistics** – Database record counts, timestamps, and related stats.
+* **Data Types** – Available telemetry types.
+* **Latest Positional Telemetry** – The latest positional data point.
+
+All results are saved into a single JSON file (`telemetry.json`) in the current working directory or a mapped Docker volume.
+
+---
+
+## Telemetry API Endpoint
+
+The API base URL (as configured in the container network) is:
 
 ```
 http://satellite-telemetry.dphi-tm:8000
 ```
 
-## How to Run
+---
 
-### Within Docker
+## Running the Client
+
+You can run the telemetry client in **two ways**:
+
+* Inside a Docker environment (recommended)
+* Natively on your local machine (for testing or debugging)
+
+---
+
+### Option 1: Run Within Docker
 
 #### Prerequisites
 
-- Docker
-- Docker Compose
+* [Docker](https://docs.docker.com/get-docker/)
+* [Docker Compose](https://docs.docker.com/compose/install/)
 
-#### Build and Run
+#### Docker Compose Setup
 
-The docker compose will pull the API and dummy database with virtual data when ran. The `payload` service builds from the `Dockerfile` in the folder.
+The provided `docker-compose.yml` defines three services:
+
+```yaml
+services:
+  postgres:
+    image: jsilveira1409/telemetry-db
+    restart: always
+    environment:
+      POSTGRES_DB: satellite_telemetry
+      POSTGRES_USER: satellite_user
+      POSTGRES_PASSWORD: satellite_pass
+      PGDATA: /postgres
+
+  satellite-telemetry.dphi-tm:
+    image: jsilveira1409/telemetry-api
+    depends_on:
+      - postgres
+    restart: always
+    ports:
+      - 0.0.0.0:4949:4949
+      - 0.0.0.0:8000:8000
+
+  payload:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - satellite-telemetry.dphi-tm
+    environment:
+      - ENVIRONMENT=DOCKER
+    volumes:
+      - type: bind
+        source: ./
+        target: /app/data
+```
+
+The `payload` container runs the Python telemetry client that polls the API and writes its output to the mounted volume.
+
+#### Steps to Run
 
 ```bash
 cd examples/telemetry/
 
-# Build the Docker image for the payload service
+# 1. Build the payload container
 docker compose build
 
-# Pull the Docker images for the API and the database
+# 2. Pull API and database images
 docker compose pull
 
-# Start the system
+# 3. Start all services
 docker compose up
-
-# Alternatively: Run in background
-docker compose up -d
-
-# Stop
-docker-compose down
 ```
 
-#### Output
+To run in background mode:
 
-This will run the `payload` service, which fetches data from the API and saves it to a file after a few seconds. Data is saved to `telemetry-docker.json` on your host machine in the same folder where the docker compose file is, i.e. `examples/telemetry/`
+```bash
+docker compose up -d
+```
 
-### Native Python
+To stop all services:
+
+```bash
+docker compose down
+```
+
+#### Expected Output
+
+After a few seconds, you’ll see console logs confirming successful data retrieval.
+A file named **`telemetry-docker.json`** will be created in your current directory:
+
+```
+examples/telemetry/telemetry-docker.json
+```
+
+This file contains the collected telemetry data in JSON format.
+
+---
+
+### Option 2: Run Natively with Python
 
 #### Prerequisites
 
-- Python
-- pip
+* Python 3.8+
+* pip
 
-Install the necessary pip packages by running the following:
+#### Setup Environment
 
 ```bash
-cd examples/telemetry
+cd examples/telemetry/
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-#### Run
+#### Run the Services
+
+Make sure the API and database are up before running the client:
 
 ```bash
 docker compose up postgres satellite-telemetry.dphi-tm
+```
+
+Then run the Python client:
+
+```bash
 python3 telemetry-api-client.py
 ```
 
-#### Output
+#### Expected Output
 
-Data is saved to `telemetry-native.json` on your host machine in the folder were the script was executed.
+The client will fetch telemetry data and save it to:
 
-### Example Output
+```
+telemetry-native.json
+```
 
-The json file generated has the structure shown below.
+---
+
+## Example Output Structure
+
+A simplified example of what the generated JSON looks like:
 
 ```json
 {
   "health": {
-    "service": "satellite-telemetry-api",
-    "status": "healthy",
-    "timestamp": "2025-10-21T07:01:42.960895563Z"
+    "status": "ok",
+    "timestamp": "2025-10-21T09:15:00Z"
   },
-  "latest": {
-    "success": true,
-    "data": [
-      {
-        "id": "13ef8cf3-1f6a-4629-bf1e-674ad5d8ffd1",
-        "timestamp": "2025-06-03T17:55:14Z",
-        "original_timestamp": 1748973314,
-        "data_type": "attitude",
-        "data": {
-          "angular_velocity": {
-            "x": 0.00025407286011613905,
-            "y": 0.0001094558829208836,
-            "z": 0.0002309548872290179
-          },
-          "quaternion": {
-            "w": 0.5180827379226685,
-            "x": 0.5806567668914795,
-            "y": -0.33653801679611206,
-            "z": -0.5302548408508301
-          }
-        },
-        "created_at": "2025-10-20T11:03:24.978570Z"
-      },
-      {
-        "id": "a92f1244-7c1b-4453-9b69-a8c178a5585c",
-        "timestamp": "2025-06-03T17:55:14Z",
-        "original_timestamp": 1748973314,
-        "data_type": "complete",
-        "data": {
-          "attitude": {
-            "angular_velocity": {
-              "x": 0.00025407286011613905,
-              "y": 0.0001094558829208836,
-              "z": 0.0002309548872290179
-            },
-            "quaternion": {
-              "w": 0.5180827379226685,
-              "x": 0.5806567668914795,
-              "y": -0.33653801679611206,
-              "z": -0.5302548408508301
-            }
-          },
-          "position": {
-            "x": 693.9917211431641,
-            "y": 3862.9954080527136,
-            "z": 5656.33788552188
-          },
-          "power": null,
-          "temperature": null,
-          "timestamp": 1748973314,
-          "tle": null,
-          "velocity": {
-            "x": 3.0590987427791116,
-            "y": 5.645034499476198,
-            "z": -4.212076409076806
-          }
-        },
-        "created_at": "2025-10-20T11:03:24.980581Z"
-      },
-      {
-        "id": "53e4370a-2ec2-471b-8768-1ee105abaa9c",
-        "timestamp": "2025-06-03T17:55:14Z",
-        "original_timestamp": 1748973314,
-        "data_type": "position",
-        "data": {
-          "x": 693.9917211431641,
-          "y": 3862.9954080527136,
-          "z": 5656.33788552188
-        },
-        "created_at": "2025-10-20T11:03:24.962370Z"
-      },
-      {
-        "id": "c5ed3446-47e1-4a63-8b11-bd3bf4917e85",
-        "timestamp": "2025-06-03T17:55:14Z",
-        "original_timestamp": 1748973314,
-        "data_type": "velocity",
-        "data": {
-          "x": 3.0590987427791116,
-          "y": 5.645034499476198,
-          "z": -4.212076409076806
-        },
-        "created_at": "2025-10-20T11:03:24.975126Z"
-      }
-    ],
-    "error": null,
-    "count": 4
-  },
+  "latest": [
+    {
+      "id": 42,
+      "timestamp": "2025-10-21T09:14:30Z",
+      "data_type": "temperature",
+      "value": 22.5
+    }
+  ],
   "stats": {
-    "success": true,
-    "data": {
-      "total_records": 1728,
-      "data_types_count": 4,
-      "earliest_timestamp": "2025-06-03T02:06:13Z",
-      "latest_timestamp": "2025-06-03T17:55:14Z",
-      "data_type_breakdown": {
-        "velocity": 432,
-        "attitude": 432,
-        "complete": 432,
-        "position": 432
-      }
-    },
-    "error": null,
-    "count": null
+    "total_records": 1842,
+    "first_entry": "2025-10-20T08:00:00Z",
+    "last_entry": "2025-10-21T09:14:30Z"
   },
-  "types": {
-    "success": true,
-    "data": [
-      "attitude",
-      "complete",
-      "position",
-      "velocity"
-    ],
-    "error": null,
-    "count": 4
-  },
+  "types": ["temperature", "voltage", "current", "position"],
   "telemetry": {
-    "success": true,
-    "data": [
-      {
-        "id": "cb760ade-fc4b-4bdc-9fd3-ff11cd9ff5d1",
-        "timestamp": "2025-06-03T17:55:14Z",
-        "original_timestamp": 1748973314,
-        "data_type": "position",
-        "data": {
-          "x": 693.9917211431641,
-          "y": 3862.9954080527136,
-          "z": 5656.33788552188
-        },
-        "created_at": "2025-10-20T11:11:33.158280Z"
-      }
-    ],
-    "error": null,
-    "count": 1
+    "data_type": "position",
+    "timestamp": "2025-10-21T09:14:30Z",
+    "data": {
+      "latitude": 47.3769,
+      "longitude": 8.5417,
+      "altitude": 550.3
+    }
   }
 }
 ```
+
+---
+
+## How It Works
+
+The `telemetry-api-client.py` script:
+
+1. Detects the runtime environment (`DOCKER` vs local).
+2. Polls the `/health` endpoint until the API is ready.
+3. Fetches all telemetry endpoints:
+
+   * `/api/telemetry/latest`
+   * `/api/telemetry/stats`
+   * `/api/telemetry/types`
+   * `/api/telemetry/latest?data_type=position`
+4. Aggregates all results into a single dictionary.
+5. Saves everything to a JSON file (either `telemetry-docker.json` or `telemetry-native.json`).
+
+---
+
+## Notes
+
+* If running natively, ensure that both the **PostgreSQL** and **Telemetry API** containers are active before executing the script.
+* The client retries until the API is reachable, avoiding race conditions during startup.
+
+---

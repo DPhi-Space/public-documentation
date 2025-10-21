@@ -16,9 +16,6 @@ services:
     ports:
       - 0.0.0.0:4949:4949
       - 0.0.0.0:8000:8000
-    environment:
-    - RUST_LOG=debug
-    - RUST_BACKTRACE=1
 
   payload:
     build: 
