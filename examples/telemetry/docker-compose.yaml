@@ -32,15 +32,3 @@ services:
       - type: bind
         source: ./
         target: /app/data
-
-  #telemetry-fetcher:
-  #  build:
-  #    context: .
-  #    dockerfile: Dockerfile
-  #  container_name: telemetry-fetcher
-  #  volumes:
-  #    - ./data:/data
-  #  networks:
-  #    - telemetry-net
-  #  restart: on-failure
-
