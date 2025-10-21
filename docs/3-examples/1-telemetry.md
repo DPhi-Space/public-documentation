@@ -28,6 +28,15 @@ The API base URL is shown below, as detailed in the [Telemetry API Section](/doc
 http://satellite-telemetry.dphi-tm:8000
 ```
 
+## Setup
+
+Clone the public documentation repository to get the source code.
+
+```bash
+git clone git@github.com:DPhi-Space/public-documentation.git
+cd public-documentation/examples/telemetry
+```
+
 ---
 
 ## Running the Client
@@ -97,13 +106,7 @@ docker compose build
 # 2. Pull API and database images
 docker compose pull
 
-# 3. Start all services
-docker compose up
-```
-
-To run in background mode:
-
-```bash
+# 3. Start all services in the background
 docker compose up -d
 ```
 
@@ -147,7 +150,7 @@ pip install -r requirements.txt
 Make sure the API and database are up before running the client:
 
 ```bash
-docker compose up postgres satellite-telemetry.dphi-tm
+docker compose up -d postgres satellite-telemetry.dphi-tm
 ```
 
 Then run the Python client:
