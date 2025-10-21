@@ -172,33 +172,23 @@ A simplified example of what the generated JSON looks like:
 
 ```json
 {
-  "health": {
-    "status": "ok",
-    "timestamp": "2025-10-21T09:15:00Z"
-  },
-  "latest": [
+  "success": true,
+  "data": [
     {
-      "id": 42,
-      "timestamp": "2025-10-21T09:14:30Z",
-      "data_type": "temperature",
-      "value": 22.5
+      "id": "cb760ade-fc4b-4bdc-9fd3-ff11cd9ff5d1",
+      "timestamp": "2025-06-03T17:55:14Z",
+      "original_timestamp": 1748973314,
+      "data_type": "position",
+      "data": {
+        "x": 693.9917211431641,
+        "y": 3862.9954080527136,
+        "z": 5656.33788552188
+      },
+      "created_at": "2025-10-20T11:11:33.158280Z"
     }
   ],
-  "stats": {
-    "total_records": 1842,
-    "first_entry": "2025-10-20T08:00:00Z",
-    "last_entry": "2025-10-21T09:14:30Z"
-  },
-  "types": ["temperature", "voltage", "current", "position"],
-  "telemetry": {
-    "data_type": "position",
-    "timestamp": "2025-10-21T09:14:30Z",
-    "data": {
-      "latitude": 47.3769,
-      "longitude": 8.5417,
-      "altitude": 550.3
-    }
-  }
+  "error": null,
+  "count": 1
 }
 ```
 
