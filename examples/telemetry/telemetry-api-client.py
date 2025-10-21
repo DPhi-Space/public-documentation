@@ -11,11 +11,11 @@ environment = os.getenv("ENVIRONMENT")
 if environment == "DOCKER":
     API_HOST = "satellite-telemetry.dphi-tm"
     print("Running inside a Docker Container")
-    OUTPUT_FILE = "/app/data/telemetry.json"
+    OUTPUT_FILE = "/app/data/telemetry-docker.json"
 else:
     API_HOST = "localhost"
     print("Running natively")
-    OUTPUT_FILE = "telemetry.json"
+    OUTPUT_FILE = "telemetry-native.json"
 API_PORT = 8000
 
 
@@ -35,9 +35,10 @@ def fetch_from_api(api_host=API_HOST, api_port=API_PORT, output_file=OUTPUT_FILE
                     print(f"Health: {response.json()}")
                     break
             except:
-                print("DB is setting up.")
-                print("Could not fetch data yet...")
-                time.sleep(1)
+                print("DB is setting up. Could not fetch data yet...")
+                if environment != "DOCKER":
+                    print("Have you run the docker compose already?")
+                time.sleep(3)
 
         print("\n\n\nFetching latest telemetry...")
         response = requests.get(f"{base_url}/api/telemetry/latest")
