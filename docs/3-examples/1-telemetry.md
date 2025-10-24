@@ -6,6 +6,8 @@ The script automatically **polls the API until it becomes available**, ensuring 
 
 This example has been tested on AMD64 and on ARMv8 using Rosetta 2.
 
+The Telemetry API reference can be found in the [Telemetry Section](/docs/2-specs/1-telemetry.md).
+
 ---
 
 ## Features
