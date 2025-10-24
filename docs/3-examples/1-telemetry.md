@@ -4,6 +4,8 @@ A simple Python client that fetches **satellite telemetry data** from the onboar
 
 The script automatically **polls the API until it becomes available**, ensuring that data retrieval only happens once the service is ready. When successful, it fetches multiple telemetry endpoints, stores the results locally, and then exits gracefully.
 
+This example has been tested on AMD64 and on ARMv8 using Rosetta 2.
+
 ---
 
 ## Features
