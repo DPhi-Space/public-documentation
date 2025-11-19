@@ -4,7 +4,7 @@ import json
 import socket
 import time
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 environment = os.getenv("ENVIRONMENT")
 
@@ -59,6 +59,27 @@ def fetch_from_api(api_host=API_HOST, api_port=API_PORT, output_file=OUTPUT_FILE
         response = requests.get(f"{base_url}/api/telemetry/latest?data_type=position")
         all_data["telemetry"] = response.json()
         print(f"Position: {json.dumps(response.json(), indent=2)}")
+
+        end_time = datetime.now(timezone.utc)
+        start_time = end_time - timedelta(days=100000)
+
+        start_str = start_time.isoformat()
+        end_str = end_time.isoformat()
+
+        print("\n\n\nFetching positional telemetry data between times...")
+
+        params = {"data_type": "position", "start_time": start_str, "end_time": end_str}
+
+        response = requests.get(f"{base_url}/api/telemetry/latest", params=params)
+
+        print("HTTP Status:", response.status_code)
+        print("Raw response text:\n", response.text)
+
+        try:
+            data = response.json()
+            print(json.dumps(data, indent=2))
+        except ValueError:
+            print("Error: Response is not valid JSON.")
 
         with open(output_file, "w") as f:
             json.dump(all_data, f, indent=2)
