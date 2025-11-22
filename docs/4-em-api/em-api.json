@@ -1,0 +1,1191 @@
+swagger: '2.0'
+info:
+  title: Dashboard API
+  description: Dashboard API for DPhi Space
+  termsOfService: https://www.example.com/terms/
+  contact:
+    email: joaquim@dphispace.com
+  license:
+    name: Awesome License
+  version: v1
+host: localhost:8000
+schemes:
+- http
+basePath: /
+consumes:
+- application/json
+produces:
+- application/json
+securityDefinitions:
+  api_key:
+    type: apiKey
+    in: header
+    name: Authorization
+security:
+- api_key: []
+paths:
+  /auth/:
+    post:
+      operationId: auth_create
+      description: ''
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/TokenObtainPair'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/TokenObtainPair'
+      tags:
+      - auth
+    parameters: []
+  /auth/refresh:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/TokenRefresh'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/TokenRefresh'
+      tags:
+      - auth
+    parameters: []
+  /constraint:
+    get:
+      operationId: constraint_list
+      description: Retrieve a list of Constraints
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Constraint'
+      tags:
+      - constraint
+    post:
+      operationId: constraint_create
+      description: Create a Constraint.
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Constraint'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Constraint'
+      tags:
+      - constraint
+    parameters: []
+  /constraint/{id}:
+    get:
+      operationId: constraint_read
+      description: Retrieve a specific constraint by its primary key (ID).
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Constraint'
+      tags:
+      - constraint
+    put:
+      operationId: constraint_update
+      description: Update a specific constraint by its primary key (ID).
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Constraint'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Constraint'
+      tags:
+      - constraint
+    patch:
+      operationId: constraint_partial_update
+      description: Partially update a specific constraint by its primary key (ID).
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Constraint'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Constraint'
+      tags:
+      - constraint
+    delete:
+      operationId: constraint_delete
+      description: Delete a Constraint by its primary key (ID).
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - constraint
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this constraint.
+      required: true
+      type: integer
+  /em/files/delete:
+    post:
+      operationId: em_files_delete_create
+      description: Delete a file or a folder onboard
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags:
+      - em
+    parameters: []
+  /em/files/downlink:
+    get:
+      operationId: em_files_downlink_list
+      description: Downlink a file from the user's onboard private volume
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+      - em
+    parameters: []
+  /em/files/list:
+    get:
+      operationId: em_files_list_list
+      description: Run the list files on CG2 and return a JSON file with the list
+        of files, their siye and their hash
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+      - em
+    parameters: []
+  /em/files/uplink:
+    post:
+      operationId: em_files_uplink_create
+      description: Uplink a file to the provider's dedicated folder on CG2's SSD with
+        a given destination path.
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags:
+      - em
+    parameters: []
+  /em/pod/image/build:
+    post:
+      operationId: em_pod_image_build_create
+      description: Build a Docker Image by providing the dockerfile, context and image
+        name
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags:
+      - em
+    parameters: []
+  /em/pod/image/list:
+    get:
+      operationId: em_pod_image_list_list
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+      - em
+    parameters: []
+  /em/pod/image/load:
+    post:
+      operationId: em_pod_image_load_create
+      description: Load a Docker Image by loading a tar file.
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags:
+      - em
+    parameters: []
+  /em/pod/run:
+    post:
+      operationId: em_pod_run_create
+      description: Run a dphi pod with the configuration provided as data.
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags:
+      - em
+    parameters: []
+  /mission:
+    get:
+      operationId: mission_list
+      description: Get a list of Missions.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Mission'
+      tags:
+      - mission
+    post:
+      operationId: mission_create
+      description: Create a new Mission.
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Mission'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Mission'
+      tags:
+      - mission
+    parameters: []
+  /mission/{id}:
+    get:
+      operationId: mission_read
+      description: Retrieve a specific Mission by its primary key (ID).
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Mission'
+      tags:
+      - mission
+    put:
+      operationId: mission_update
+      description: Update a specific Mission by its primary key (ID).
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Mission'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Mission'
+      tags:
+      - mission
+    patch:
+      operationId: mission_partial_update
+      description: Partially update a specific Mission by its primary key (ID).
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Mission'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Mission'
+      tags:
+      - mission
+    delete:
+      operationId: mission_delete
+      description: Delete a Mission by its primary key (ID).
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - mission
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this mission.
+      required: true
+      type: integer
+  /operation:
+    get:
+      operationId: operation_list
+      description: Get a list of all Operations for the authenticated user.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Operation'
+      tags:
+      - operation
+    post:
+      operationId: operation_create
+      description: Create a new Operation with the given data.
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/OperationCreate'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/OperationCreate'
+      tags:
+      - operation
+    parameters: []
+  /operation/downlink:
+    post:
+      operationId: operation_create_pure_downlink
+      description: |-
+        Create a pure downlink operation, in which only the requested files
+        are downlinked from the satellite.
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Operation'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Operation'
+      tags:
+      - operation
+    parameters: []
+  /operation/download:
+    get:
+      operationId: operation_download_file
+      description: Download file from the git storage main branch.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Operation'
+      tags:
+      - operation
+    parameters: []
+  /operation/onboard:
+    get:
+      operationId: operation_list_main_onboard_files
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Operation'
+      tags:
+      - operation
+    parameters: []
+  /operation/remove_downlink:
+    post:
+      operationId: operation_remove_downlink
+      description: Remove a downlink request from the earliest pure downlink operation
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Operation'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Operation'
+      tags:
+      - operation
+    parameters: []
+  /operation/to_downlink:
+    get:
+      operationId: operation_list_requested_downlink_files
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Operation'
+      tags:
+      - operation
+    parameters: []
+  /operation/{id}:
+    get:
+      operationId: operation_read
+      description: Retrieve a specific Operation by its primary key (ID).
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Operation'
+      tags:
+      - operation
+    put:
+      operationId: operation_update
+      description: ''
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Operation'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Operation'
+      tags:
+      - operation
+    patch:
+      operationId: operation_partial_update
+      description: Partially update the data of an Operation by its primary key (ID).
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Operation'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Operation'
+      tags:
+      - operation
+    delete:
+      operationId: operation_delete
+      description: Delete an Operation by its ID.
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - operation
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this operation.
+      required: true
+      type: integer
+  /operation/{id}/onboard:
+    get:
+      operationId: operation_list_op_onboard_files
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Operation'
+      tags:
+      - operation
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this operation.
+      required: true
+      type: integer
+  /operation/{id}/set_status:
+    post:
+      operationId: operation_set_status
+      description: Set status of Operation to NS or P, and verify constraints.
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Operation'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Operation'
+      tags:
+      - operation
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this operation.
+      required: true
+      type: integer
+  /payload:
+    get:
+      operationId: payload_list
+      description: Get a list of Payloads.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Payload'
+      tags:
+      - payload
+    post:
+      operationId: payload_create
+      description: Create a new Payload.
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Payload'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Payload'
+      tags:
+      - payload
+    parameters: []
+  /payload/{id}:
+    get:
+      operationId: payload_read
+      description: Retrieve a specific Payload by its primary key (ID).
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Payload'
+      tags:
+      - payload
+    put:
+      operationId: payload_update
+      description: Update a specific Payload by its primary key (ID).
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Payload'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Payload'
+      tags:
+      - payload
+    patch:
+      operationId: payload_partial_update
+      description: Partially update a specific Payload by its primary key (ID).
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Payload'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Payload'
+      tags:
+      - payload
+    delete:
+      operationId: payload_delete
+      description: Delete a Payload by its primary key (ID).
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - payload
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this payload.
+      required: true
+      type: integer
+  /payload/{id}/set_constraint:
+    post:
+      operationId: payload_set_constraint
+      description: Set Constraint on a Payload
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Payload'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Payload'
+      tags:
+      - payload
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this payload.
+      required: true
+      type: integer
+  /provider:
+    get:
+      operationId: provider_list
+      description: Get a list of Providers.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Provider'
+      tags:
+      - provider
+    post:
+      operationId: provider_create
+      description: ''
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Provider'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Provider'
+      tags:
+      - provider
+    parameters: []
+  /provider/active:
+    get:
+      operationId: provider_active
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Provider'
+      tags:
+      - provider
+    parameters: []
+  /provider/constraint:
+    get:
+      operationId: provider_constraint
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Provider'
+      tags:
+      - provider
+    parameters: []
+  /provider/register:
+    post:
+      operationId: provider_register
+      description: ''
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Provider'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Provider'
+      tags:
+      - provider
+    parameters: []
+  /provider/usage:
+    get:
+      operationId: provider_usage
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Provider'
+      tags:
+      - provider
+    parameters: []
+  /provider/{id}:
+    get:
+      operationId: provider_read
+      description: Retrieve a specific Provider by its primary key (ID).
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Provider'
+      tags:
+      - provider
+    put:
+      operationId: provider_update
+      description: Update a specific Provider by its primary key (ID).
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Provider'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Provider'
+      tags:
+      - provider
+    patch:
+      operationId: provider_partial_update
+      description: Partially update a specific Provider by its primary key (ID).
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Provider'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Provider'
+      tags:
+      - provider
+    delete:
+      operationId: provider_delete
+      description: Delete a Provider by its primary key (ID).
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - provider
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this provider.
+      required: true
+      type: integer
+  /redoc/:
+    get:
+      operationId: redoc_list
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      produces: []
+      tags:
+      - redoc
+    parameters: []
+  /schema/:
+    get:
+      operationId: schema_list
+      summary: OpenApi3 schema for this API. Format can be selected via content negotiation.
+      description: |-
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      produces:
+      - application/vnd.oai.openapi
+      - application/yaml
+      - application/vnd.oai.openapi+json
+      - application/json
+      tags:
+      - schema
+    parameters: []
+  /swagger/:
+    get:
+      operationId: swagger_list
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      produces: []
+      tags:
+      - swagger
+    parameters: []
+definitions:
+  TokenObtainPair:
+    required:
+    - username
+    - password
+    type: object
+    properties:
+      username:
+        title: Username
+        type: string
+        minLength: 1
+      password:
+        title: Password
+        type: string
+        minLength: 1
+  TokenRefresh:
+    required:
+    - refresh
+    type: object
+    properties:
+      refresh:
+        title: Refresh
+        type: string
+        minLength: 1
+      access:
+        title: Access
+        type: string
+        readOnly: true
+        minLength: 1
+  Constraint:
+    required:
+    - name
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      name:
+        title: Name
+        type: string
+        maxLength: 20
+        minLength: 1
+      downlink_budget:
+        title: Downlink budget
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+      uplink_budget:
+        title: Uplink budget
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+      mpu_budget:
+        title: Mpu budget
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+      fpga_budget:
+        title: Fpga budget
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+      gpu_budget:
+        title: Gpu budget
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+      power_budget:
+        title: Power budget
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+  Mission:
+    required:
+    - name
+    type: object
+    properties:
+      name:
+        title: Name
+        type: string
+        maxLength: 40
+        minLength: 1
+  Operation:
+    required:
+    - name
+    - description
+    - execution_date
+    - snapshot
+    - max_execution_time
+    - payload
+    type: object
+    properties:
+      name:
+        title: Name
+        type: string
+        maxLength: 40
+        minLength: 1
+      description:
+        title: Description
+        type: string
+        maxLength: 400
+        minLength: 1
+      execution_date:
+        title: Execution date
+        type: string
+        format: date
+      status:
+        title: Status
+        type: string
+        enum:
+        - C
+        - F
+        - S
+        - P
+        - NS
+      snapshot:
+        title: Snapshot
+        type: string
+        maxLength: 40
+        minLength: 1
+      max_execution_time:
+        title: Max execution time
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+      node:
+        title: Node
+        type: string
+        enum:
+        - MPU
+        - FPGA
+        - GPU
+      payload:
+        title: Payload
+        type: integer
+      uplink_used:
+        title: Uplink used
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+        x-nullable: true
+      pure_downlink:
+        title: Pure downlink
+        type: boolean
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      files:
+        title: Files
+        type: string
+        readOnly: true
+      downlink_used:
+        title: Downlink used
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+        x-nullable: true
+      mpu_used:
+        title: Mpu used
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+        x-nullable: true
+      fpga_used:
+        title: Fpga used
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+        x-nullable: true
+      gpu_used:
+        title: Gpu used
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+        x-nullable: true
+      power_used:
+        title: Power used
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+        x-nullable: true
+  OperationCreate:
+    required:
+    - name
+    - description
+    - execution_date
+    - max_execution_time
+    - payload
+    type: object
+    properties:
+      name:
+        title: Name
+        type: string
+        maxLength: 40
+        minLength: 1
+      description:
+        title: Description
+        type: string
+        maxLength: 400
+        minLength: 1
+      execution_date:
+        title: Execution date
+        type: string
+        format: date
+      max_execution_time:
+        title: Max execution time
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+      node:
+        title: Node
+        type: string
+        enum:
+        - MPU
+        - FPGA
+        - GPU
+      payload:
+        title: Payload
+        type: integer
+      files_to_uplink:
+        type: array
+        items:
+          type: string
+          readOnly: true
+          format: uri
+      files_to_downlink:
+        type: array
+        items:
+          type: string
+          minLength: 1
+      files_to_delete:
+        type: array
+        items:
+          type: string
+          minLength: 1
+  Payload:
+    required:
+    - name
+    - integration_status
+    - provider
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      name:
+        title: Name
+        type: string
+        maxLength: 30
+        minLength: 1
+      integration_status:
+        title: Integration status
+        type: string
+        maxLength: 30
+        minLength: 1
+      downlink_used:
+        title: Downlink used
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+      uplink_used:
+        title: Uplink used
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+      mpu_used:
+        title: Mpu used
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+      fpga_used:
+        title: Fpga used
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+      gpu_used:
+        title: Gpu used
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+      power_used:
+        title: Power used
+        type: integer
+        maximum: 9223372036854775807
+        minimum: -9223372036854775808
+      mission:
+        title: Mission
+        type: integer
+      constraint:
+        title: Constraint
+        type: integer
+        x-nullable: true
+      provider:
+        title: Provider
+        type: integer
+  User:
+    required:
+    - username
+    - password
+    type: object
+    properties:
+      username:
+        title: Username
+        description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+          only.
+        type: string
+        pattern: ^[\w.@+-]+$
+        maxLength: 150
+        minLength: 1
+      password:
+        title: Password
+        type: string
+        maxLength: 128
+        minLength: 1
+      email:
+        title: Email address
+        type: string
+        format: email
+        maxLength: 254
+  Provider:
+    required:
+    - user
+    type: object
+    properties:
+      user:
+        $ref: '#/definitions/User'
+      mission:
+        title: Mission
+        type: integer
+        x-nullable: true
