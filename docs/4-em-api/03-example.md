@@ -328,4 +328,4 @@ This demonstrates a complete EM API flow:
 
 ---
 
-Checkout the [FAQ](/docs/clients/em-api/04-faq.md).
+Checkout the [FAQ](/docs/4-em-api/04-faq.md).

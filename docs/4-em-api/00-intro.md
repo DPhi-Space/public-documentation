@@ -6,7 +6,7 @@ This API provides a ground-based simulation of satellite operations, allowing de
 
 :warning: This EM API does not take into account communication windows. Meaning it will execute the request as soon as possible. However, always keep in mind that during space operations, requests will be batched and run together when communication windows are opened with CG2.
 
-1. [Overview](/docs/clients/em-api/01-overview.md)
-2. [API Specifications](/docs/clients/em-api/02-api-specs.md)
-3. [Example](/docs/clients/em-api/03-example.md)
-4. [FAQ](/docs/clients/em-api/04-faq.md)
+1. [Overview](/docs/4-em-api/01-overview.md)
+2. [API Specifications](/docs/4-em-api/02-api-specs.md)
+3. [Example](/docs/4-em-api/03-example.md)
+4. [FAQ](/docs/4-em-api/04-faq.md)

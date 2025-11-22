@@ -377,4 +377,4 @@ Notes:
 
 ---
 
-Checkout an [Example](/docs/clients/em-api/03-example.md) implementation.
+Checkout an [Example](/docs/4-em-api/03-example.md) implementation.
