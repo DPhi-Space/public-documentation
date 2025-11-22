@@ -100,4 +100,5 @@ This API acts as a **ground-based simulation of CG2 space operations**, enabling
 
 ---
 
-Check out the [API Specifications](/docs/clients/em-api/01-api-specs.md)
+/docs/2-specs/1-telemetry.md
+Check out the [API Specifications](/docs/clients/4-em-api/01-api-specs.md)
