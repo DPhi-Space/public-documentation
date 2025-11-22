@@ -1,4 +1,4 @@
-# **EM Interfacing API Specifications**
+# Specifications
 
 For a more detailed EM API description, checkout the swagger file `em-api.json` and open it with [swagger editor](https://editor.swagger.io/).
 
