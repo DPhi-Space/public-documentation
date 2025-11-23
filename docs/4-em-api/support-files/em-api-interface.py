@@ -7,12 +7,12 @@ import requests
 import time
 import datetime
 
-BASE_URL = "http://localhost:80/"
+BASE_URL = "http://192.168.10.174:80/"
 TOKEN = None
 
 # Default credentials for testing
 username = "client1"
-password = "dphi_software!"
+password = "testing!"
 
 
 # ============================================================
