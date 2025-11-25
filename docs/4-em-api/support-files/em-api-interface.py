@@ -7,12 +7,12 @@ import requests
 import time
 import datetime
 
-BASE_URL = ""
+BASE_URL = "http://localhost:8000/"
 TOKEN = None
 
 # Default credentials for testing
 username = "client1"
-password = ""
+password = "dphi_software!"
 
 
 # ============================================================
@@ -230,7 +230,9 @@ def image_list():
 
 
 def namespace_create():
-    """ """
+    """
+    Request a namespace creation for more complex operations where the user's DPhi Pods can communicate with each other onboard. This will create a namespace with the username as a prefix, and when DPhi Pod runs are requested to run with the namespace, they will be run in it.
+    """
     response = authorized_post(
         BASE_URL + "em/pod/namespace/create",
     )
@@ -255,6 +257,9 @@ def run(
     max_duration: maximum execution duration of the DPhi Pod in minutes before the system stops it gracefully.
     command(optional): linux bash command to run in the DPhi Pod. If none is provided, the default command embedded in the Docker image will be executed.
     scheduled_time(optional): schedule time when to run the DPhi Pod. If none is provided, it will be scheduled as soon as possible. The time must be provided in ISO format with timezone, e.g. 2025-05-22T12:10:00+02:00.
+    pod_name(optional): sets the name of the DPhi Pod to run. DPhi Pod Names and dedicated volumes are linked. Meaning that running a pod with a different name will create a new dedicated volume with no data shared with previous pods runned with different names. When no name is provide, the default one is used and all the data is shared with the previous pods ran with the default name. Setting the name is especially useful when
+    ports(optional): sets the ports to be exposed for this DPhi Pod. This allows the pod to expose a service to others pods running in the same namespace. Therefore, a namespace must be created before and the namespace parameter must be set to true for the ports to be taken into account.
+    namespace(optional): sets the pod to be run inside a private namespace for the user, in which different pods can communicate between each other through the exposed ports. A namespace must be created beforehand.
 
     """
     response = authorized_post(
@@ -338,19 +343,6 @@ if __name__ == "__main__":
     command = 'sh -c "date > /data/time.txt"'
     print(
         run("echo-test", max_duration=1, scheduled_time=scheduled_time, command=command)
-    )
-
-    print("\n=== COMPLEX OPERATIONS AND SETUPS ===")
-    namespace_create()
-    print(
-        run(
-            "echo-test",
-            pod_name="new-place",
-            max_duration=1,
-            command="echo 'testing new name' > /data/new-namespace.txt",
-            namespace=True,
-            ports=["8080", "80"],
-        )
     )
 
     print("\n=== DOWNLINK FILE ===")
