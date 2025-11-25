@@ -7,12 +7,12 @@ import requests
 import time
 import datetime
 
-BASE_URL = "http://192.168.10.174:80/"
+BASE_URL = ""
 TOKEN = None
 
 # Default credentials for testing
 username = "client1"
-password = "testing!"
+password = ""
 
 
 # ============================================================
@@ -144,6 +144,9 @@ def downlink(filepath, downlink_folder="downlink/"):
     Downlink a file from the users dedicated volume and save it locally.
 
     Backend returns base64 content + metadata.
+
+    filepath: filepath onboard to donwlink
+    downlink_folder: local destination folder where to downlink the file
     """
     response = authorized_get(
         BASE_URL + "/em/files/downlink",
@@ -174,6 +177,8 @@ def downlink(filepath, downlink_folder="downlink/"):
 def delete(filepath):
     """
     Delete a file on the users dedicated folder on CG2.
+
+    filepath: filepath to delete onboard. Can be a folder or a file.
     """
     response = authorized_post(
         BASE_URL + "em/files/delete",
@@ -190,6 +195,10 @@ def delete(filepath):
 def image_build(dockerfile, image, context="."):
     """
     Build a Docker image on CG2. The image is built on an air-gapped environment.
+
+    dockerfile: Dockerfile path onboard to build the Docker image from
+    image: Docker image name to tag the resulting build
+    context: Docker build context from where to fetch the application source files
     """
     response = authorized_post(
         BASE_URL + "em/pod/image/build",
@@ -201,6 +210,9 @@ def image_build(dockerfile, image, context="."):
 def image_load(tarfile, image):
     """
     Load a Docker image tarball on CG2.
+
+    tarfile: File path from where to load the tar file of the Docker image.
+    image: Docker image name from the tarfile. This parameter must match the Docker image name used during the build before creating the tar file.
     """
     response = authorized_post(
         BASE_URL + "em/pod/image/load",
@@ -217,7 +229,24 @@ def image_list():
     return response.json()
 
 
-def run(image, node="FPGA", max_duration=1, command="", scheduled_time=None):
+def namespace_create():
+    """ """
+    response = authorized_post(
+        BASE_URL + "em/pod/namespace/create",
+    )
+    return response.json()
+
+
+def run(
+    image,
+    node="FPGA",
+    max_duration=1,
+    command="",
+    scheduled_time=None,
+    pod_name=None,
+    ports=None,
+    namespace=False,
+):
     """
     Run a DPhi Pod on the EM with maximum execution time in minutes.
 
@@ -236,6 +265,9 @@ def run(image, node="FPGA", max_duration=1, command="", scheduled_time=None):
             "max_duration": max_duration,
             "command": command,
             "scheduled_time": scheduled_time,
+            "pod_name": pod_name,
+            "ports": ports,
+            "namespace": namespace,
         },
     )
     return response.json()
@@ -306,6 +338,19 @@ if __name__ == "__main__":
     command = 'sh -c "date > /data/time.txt"'
     print(
         run("echo-test", max_duration=1, scheduled_time=scheduled_time, command=command)
+    )
+
+    print("\n=== COMPLEX OPERATIONS AND SETUPS ===")
+    namespace_create()
+    print(
+        run(
+            "echo-test",
+            pod_name="new-place",
+            max_duration=1,
+            command="echo 'testing new name' > /data/new-namespace.txt",
+            namespace=True,
+            ports=["8080", "80"],
+        )
     )
 
     print("\n=== DOWNLINK FILE ===")
