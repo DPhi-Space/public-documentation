@@ -22,3 +22,5 @@ docs/4-em-api/support-files/downlink
 examples/pod-namespaces/server/__pycache__
 examples/pod-namespaces/server/server.tar
 docs/4-em-api/support-files/server.tar
+examples/em-api/server.tar
+examples/em-api/test.tar
