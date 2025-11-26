@@ -1,331 +1,265 @@
 # Python Client Example
 
-This Python script demonstrates how to interact with the **EM API** for file management, Docker image operations, and DPhi Pods execution. It covers authentication, file uplink/downlink, Docker image build/load/list, running DPhi Pods, and cleanup.
+The `em-api-interface.py` script exemplifies how to create a client wrapper for the EM API specifications. It can be found under the [`examples/em-api/`](/examples/em-api/em-api-interface.py) folder, with all the necessary support files for running the examples.
 
----
+## Overview
 
-## **1. Authentication**
+This Python client provides a simple interface for interacting with the CG2 EM API. It handles authentication, file operations, Docker image management, and DPhi Pod execution through a set of helper functions that abstract the underlying REST API calls.
 
-The client first obtains a JWT access token to authorize requests.
+## Key Features
 
-```python
-def get_token():
-    response = requests.post(
-        BASE_URL + "auth/",
-        data={"username": username, "password": password},
-    )
-    content = response.json()
-    TOKEN = content["access"]
-```
+- **Automatic authentication** with token management and refresh
+- **File operations**: uplink, downlink, list, and delete files
+- **Docker image management**: build from Dockerfile, load from tarball, and list available images
+- **Pod execution**: run containers on FPGA, GPU, or MPU nodes with scheduling support
+- **Namespace management**: create namespaces for inter-pod communication
+- **Storage model support**: full integration with pod-name-to-volume mapping
 
-All subsequent requests use this token via helper functions:
+## Getting Started
 
-```python
-def ensure_token():
-    """
-    Ensures TOKEN exists. If not, fetch a new one.
-    """
-    if TOKEN is None:
-        print("No token found. Fetching new token...")
-        if not get_token():
-            raise Exception("Authentication failed.")
+### Prerequisites
 
-def authorized_get(url, **kwargs):
-    """
-    Wrapper for GET requests with Authorization header and auto-refresh logic.
-    """
-    ensure_token()
-    headers = kwargs.pop("headers", {})
-    headers["Authorization"] = f"Bearer {TOKEN}"
+- Python 3.x
+- `requests` library (`pip install requests`)
+- Access credentials (username and password)
 
-    response = requests.get(url, headers=headers, **kwargs)
-
-    # Retry if token expired
-    if response.status_code == 401:
-        print("Token expired. Refreshing...")
-        if get_token():
-            headers["Authorization"] = f"Bearer {TOKEN}"
-            response = requests.get(url, headers=headers, **kwargs)
-
-    return response
-
-
-def authorized_post(url, **kwargs):
-    """
-    Wrapper for POST requests with Authorization header and auto-refresh logic.
-    """
-    ensure_token()
-    headers = kwargs.pop("headers", {})
-    headers["Authorization"] = f"Bearer {TOKEN}"
-
-    response = requests.post(url, headers=headers, **kwargs)
-
-    # Retry if token expired
-    if response.status_code == 401:
-        print("Token expired. Refreshing...")
-        if get_token():
-            headers["Authorization"] = f"Bearer {TOKEN}"
-            response = requests.post(url, headers=headers, **kwargs)
-
-    return response
-```
-
----
-
-## **2. File Operations**
-
-### **Uplink Files**
-
-Upload multiple files to a specific folder on the user's private volume on the EM:
+### Basic Setup
 
 ```python
-def uplink(filepaths, dest_path=""):
-    """
-    Upload multiple files to the users dedicated volume on CG2.
+import requests
+from em_api_interface import *
 
-    filepaths: list of local paths to upload
-    dest_path: remote destination folder
-    """
-    ensure_token()
-    headers = {"Authorization": f"Bearer {TOKEN}"}
-
-    # Prepare files for multipart upload
-    files_to_upload = []
-    for filepath in filepaths:
-        filename = os.path.basename(filepath)
-        files_to_upload.append(("files", (filename, open(filepath, "rb"))))
-
-    response = requests.post(
-        BASE_URL + "em/files/uplink",
-        headers=headers,
-        files=files_to_upload,
-        data={"dest_path": dest_path},
-    )
-
-    # Clean up file handles
-    for _, (_, file_obj) in files_to_upload:
-        file_obj.close()
-
-    return response.json()
-
-```
-
-- `filepaths`: list of local files to upload
-- `dest_path`: remote folder path
-
-### **List Files**
-
-Retrieve a JSON list of files present in the user's private volume on the EM, with metadata:
-
-```python
-def files_list():
-    """
-    Retrieve a list of files on the users dedicated volume on CG2.
-    """
-    response = authorized_get(BASE_URL + "/em/files/list")
-    return response.json()
-```
-
-### **Downlink Files**
-
-Downlink a file from the user's private volume on the EM:
-
-```python
-def downlink(filepath, downlink_folder="downlink/"):
-    """
-    Downlink a file from the users dedicated volume and save it locally.
-
-    Backend returns base64 content + metadata.
-    """
-    response = authorized_get(
-        BASE_URL + "/em/files/downlink",
-        params={"filepath": filepath},
-    )
-
-    if response.status_code != 200:
-        return response.json()
-
-    data = response.json()
-
-    # Decode BASE64 content
-    filename = data["filename"]
-    file_bytes = base64.b64decode(data["content"])
-
-    # Prepare local folder
-    os.makedirs(downlink_folder, exist_ok=True)
-    local_path = os.path.join(downlink_folder, filename)
-
-    # Write file
-    with open(local_path, "wb") as f:
-        f.write(file_bytes)
-
-    print(f"File '{filename}' saved to {local_path}")
-    return data
-```
-
-This saves the file locally in a `downlink/` folder.
-
-### **Delete Files**
-
-Delete files or directories on the user's private volume on the EM:
-
-```python
-def delete(filepath):
-    """
-    Delete a file on the users dedicated folder on CG2.
-    """
-    response = authorized_post(
-        BASE_URL + "em/files/delete",
-        data={"filepath": filepath},
-    )
-    return response.json()
-
-```
-
----
-
-## **3. Docker Image Operations**
-
-### **Build Docker Image**
-
-Build a Docker image remotely using a Dockerfile and context directory:
-
-```python
-def image_build(dockerfile, image, context="."):
-    """
-    Build a Docker image on CG2. The image is built on an air-gapped environment.
-    """
-    response = authorized_post(
-        BASE_URL + "em/pod/image/build",
-        data={"dockerfile": dockerfile, "image": image, "context": context},
-    )
-    return response.json()
-```
-
-- `dockerfile`: path to Dockerfile on the user's private volume on the EM
-- `image_name`: name of the Docker image
-- `context`: folder context for the build on the user's private volume on the EM
-
-### **Load Docker Image**
-
-Load a prebuilt tar image that has already been uplinked to the user's private volume on the EM:
-
-```python
-def image_load(tarfile, image):
-    """
-    Load a Docker image tarball on CG2.
-    """
-    response = authorized_post(
-        BASE_URL + "em/pod/image/load",
-        data={"tarfile": tarfile, "image": image},
-    )
-    return response.json()
-```
-
-### **List Docker Images**
-
-List available Docker images for the user.
-
-```python
-def image_list():
-    """
-    List available Docker images on the EM for the user.
-    """
-    response = authorized_get(BASE_URL + "em/pod/image/list")
-    return response.json()
-```
-
----
-
-### Run Docker Image (Pod Execution)\*\*
-
-Run a DPhi Pod on the EM from an already built Docker Image. Doing so will stop any previous instance of a DPhi Pod ran by the same user.
-
-```python
-def run(image, node="FPGA", max_duration=1, command="", scheduled_time=None):
-    """
-    Run a DPhi Pod on the EM with maximum execution time in minutes.
-
-    image: Docker image to run
-    node: node on which to run the DPhi Pod [FPGA,GPU,MPU]
-    max_duration: maximum execution duration of the DPhi Pod in minutes before the system stops it gracefully.
-            "max_duration": max_duration,
-            "command": command,
-            "scheduled_time": scheduled_time,
-        },
-    )
-    return response.json()
-```
-
-- `image`: Docker image to run inside the DPhi Pod
-- `max_duration`: runtime limit in minutes before gracefully stopping the container.
-- `node`: Node on which to run the DPhi Pod [FPGA,GPU,MPU],
-- `command`(optional): Linux bash command to run when starting the DPhi Pod. If none is provided, the default command embedded in the Docker image.
-- `scheduled_time`(optional): time when to schedule the DPhi Pods execution. If none is provided, it will be scheduled as soon as possible. Time format should be provided in ISO format, e.g. `2025-05-22T12:10:00+02:00`.
-
----
-
-### DPhi Pod Status
-
-Get the current DPhi Pod execution status.
-
-```python
-def pod_status():
-    """
-    Get current DPhi Pod execution status.
-    """
-    response = authorized_get(BASE_URL + "em/pod/status")
-    return response.json()
-```
-
----
-
-## **5. Example Workflow**
-
-A typical workflow in the script:
-
-```python
-# Authenticate
+# Authentication happens automatically on first API call
+# Or explicitly with:
 get_token()
+```
 
-# List current files
-files_list()
+## Understanding the Storage Model
 
-# Upload files
-uplink(["Dockerfile", "echo-test.sh"], dest_path="echo-test")
+Before diving into examples, it's important to understand how storage works:
 
-# Build Docker image
+- Each `pod_name` corresponds to a unique persistent volume
+- Using an existing `pod_name` → reuses the same volume and files
+- Using a new `pod_name` → creates a new, empty volume
+- Omitting `pod_name` → uses your default volume
+- Files in one pod's volume are NOT visible to other pods
+
+This applies to all operations: file uplink/downlink, Docker builds, and pod runs.
+
+## Examples
+
+The script includes three comprehensive examples demonstrating different aspects of the API:
+
+### 1. Simple Operations (`example_simple_operations`)
+
+This example demonstrates the basic workflow for working with files and running pods:
+
+**What it does:**
+
+- Lists files in the default volume
+- Uplinks a Dockerfile and shell script to a specific directory
+- Builds a Docker image from the uploaded files
+- Runs the image on the default FPGA node
+- Runs the same image on GPU with a custom command
+- Schedules a pod to run at a specific future time
+- Downlinks generated output files
+- Cleans up by deleting uploaded and generated files
+
+**Key concepts:**
+
+- Basic file operations (uplink, list, downlink, delete)
+- Docker image building from volume files
+- Pod execution with and without custom commands
+- Scheduled pod execution with timezone support
+- Pod status checking
+
+**Code snippet:**
+
+```python
+# Upload files to a directory
+uplink(["./Dockerfile", "./echo-test.sh"], dest_path="echo-test")
+
+# Build image from uploaded files
 image_build("./echo-test/Dockerfile", "echo-test", "./echo-test")
 
-# Downlink a file
-downlink("/echo-test/Dockerfile")
+# Run on FPGA (default node)
+run("echo-test", max_duration=1)
 
-# Run Docker container
-run("echo-test")
+# Run on GPU with custom command
+run("echo-test", node="GPU", max_duration=1,
+    command="echo 123 > /data/gpu-downlink.txt")
 
-# Cleanup files
-delete("/echo-test/Dockerfile")
-delete("downlink.txt")
+# Schedule for future execution
+scheduled_time = (datetime.now(tz) + timedelta(minutes=1)).isoformat()
+run("echo-test", max_duration=1, scheduled_time=scheduled_time,
+    command='sh -c "date > /data/time.txt"')
 ```
 
-This demonstrates a complete EM API flow:
+### 2. Pod Volumes (`example_pod_volumes`)
 
-1. Authenticate
-2. Upload files
-3. Build Docker Image
-4. Run Docker Image/Pod execution
-5. Downlink Files
-6. Cleanup
+This example demonstrates the pod-name-to-volume storage model:
 
----
+**What it does:**
 
-## **6. Notes**
+- Creates a named pod (`pod-a`) which gets its own dedicated volume
+- Runs a command that writes a file to the pod's volume
+- Lists files specific to `pod-a`'s volume
+- Uplinks files specifically to `pod-a`'s volume
+- Shows that files in `pod-a` are not visible in the default volume
+- Demonstrates that file operations must specify the correct `pod_name`
+- Downlinks and deletes files from the specific pod volume
 
-- All file content for downlink is returned in **Base64** encoding.
-- The client automatically refreshes the JWT token if expired.
-- The BASE_URL will be provided to the user once the EM is reserved.
-- Docker Images built on board will have the user's name prefixed to it for filtering, and only these Docker Images can be executed by the user. This will be automatically managed by the backend when requesting builds. However, when loading tar files, the user is responsible for tagging the Docker Image with it's username. Otherwise, it will be impossible to run the execute the given Docker Image.
+**Key concepts:**
 
----
+- Pod-name-to-volume mapping
+- Volume isolation between different pod names
+- Importance of specifying `pod_name` for file operations
+- Persistent storage across pod runs with the same name
 
-Checkout the [FAQ](/docs/4-em-api/04-faq.md).
+**Code snippet:**
+
+```python
+# Create pod with dedicated volume
+run("python:3.11-alpine", pod_name="pod-a", max_duration=30,
+    command="echo 'Is this the final frontier?' > /data/hello-space.txt")
+
+# Upload to pod-a's volume specifically
+uplink(["hello-world.txt"], pod_name="pod-a")
+
+# List pod-a's files
+files_list(pod_name="pod-a")
+
+# Default volume doesn't have pod-a's files
+files_list()  # pod-a files not visible here
+
+# Must specify pod_name for operations
+delete("hello-world.txt", pod_name="pod-a")  # Works
+delete("hello-world.txt")  # Fails - looks in default volume
+```
+
+### 3. Inter-Pod Communication (`example_pod_intercommunication`)
+
+This example demonstrates how to make pods communicate within a private namespace:
+
+**What it does:**
+
+- Creates a private namespace for the user
+- Starts a server pod that exposes port 80
+- Starts a client pod that fetches data from the server
+- Shows how pods reference each other using `<username>-<pod_name>:<port>`
+- Downlinks the fetched data from the client pod's volume
+
+**Key concepts:**
+
+- Namespace creation for pod networking
+- Port exposure with the `ports` parameter
+- Inter-pod communication using pod naming convention
+- Running multiple pods that interact with each other
+- Network isolation per user namespace
+
+**Code snippet:**
+
+```python
+# Create namespace first
+namespace_create()
+
+# Start server pod with exposed port
+run("python:3.11-alpine", pod_name="server", max_duration=2,
+    namespace=True, ports=[80],
+    command="python -m http.server 80")
+
+# Client pod fetches from server (client1-server:80)
+run("python:3.11-alpine", pod_name="client", max_duration=1,
+    namespace=True,
+    command="wget client1-server:80/ -O /data/server-data.txt")
+
+# Check what the client downloaded
+files_list(pod_name="client")
+downlink("server-data.txt", pod_name="client")
+```
+
+**Important:** Both pods must:
+
+- Run with `namespace=True`
+- Be created after namespace creation
+- Use the naming convention `<username>-<pod_name>:<port>` for communication
+
+## Error Handling
+
+The script includes an `examples_errors()` function that demonstrates common error scenarios:
+
+- Attempting to downlink non-existent files
+- Building with incorrect context paths
+- Running non-existent Docker images
+- Checking pod status when deployment fails
+
+These examples help understand the error messages returned by the API.
+
+## API Helper Functions
+
+The script provides the following helper functions:
+
+### Authentication
+
+- `get_token()` - Authenticate and store JWT token
+- `ensure_token()` - Automatically fetch token if needed
+
+### File Operations
+
+- `uplink(filepaths, dest_path="", pod_name="")` - Upload files
+- `downlink(filepath, downlink_folder="downlink/", pod_name="")` - Download files
+- `files_list(pod_name="")` - List files in volume
+- `delete(filepath, pod_name="")` - Delete files or folders
+
+### Docker Operations
+
+- `image_build(dockerfile, image, context=".", pod_name="")` - Build Docker image
+- `image_load(tarfile, image, pod_name="")` - Load image from tarball
+- `image_list()` - List available images
+
+### Pod Operations
+
+- `run(image, node="FPGA", max_duration=1, command="", scheduled_time=None, pod_name=None, ports=None, namespace=False)` - Execute pod
+- `pod_status(pod_name="")` - Check pod status
+- `namespace_create()` - Create namespace for inter-pod communication
+
+### HTTP Helpers
+
+- `authorized_get(url, **kwargs)` - GET with auto-authentication
+- `authorized_post(url, **kwargs)` - POST with auto-authentication
+
+## Running the Examples
+
+To run the examples:
+
+```bash
+# Run all examples
+python em-api-interface.py
+
+```
+
+## Configuration
+
+Default configuration in the script:
+
+```python
+BASE_URL = "http://localhost:8000/"
+username = "client1"
+password = ""
+```
+
+Modify these variables to match your environment and credentials.
+
+## Best Practices
+
+1. **Always check pod status** after scheduling - successful scheduling doesn't guarantee successful deployment
+2. **Specify pod_name** when working with multiple volumes to avoid confusion
+3. **Create namespace before** using port exposure features
+4. **Use meaningful pod names** to keep track of different volumes
+5. **Clean up resources** by deleting unused files
+6. **Handle errors gracefully** - the API returns detailed error messages
+
+## Next Steps
+
+- Review the [API Specifications](/docs/4-em-api/02-api-specs.md) for detailed endpoint documentation
+- Check the [Swagger documentation](https://editor.swagger.io/) with `em-api.json`

@@ -2,30 +2,57 @@
 
 For a more detailed EM API description, checkout the swagger file `em-api.json` and open it with [swagger editor](https://editor.swagger.io/).
 
+## Storage Model
+
+Each DPhi Pod name (`pod_name`) corresponds to a unique persistent private volume (PVC), on top of defining the name of the pod to be run. The rules are:
+
+- Using an existing `pod_name` → reuses the same volume and its stored files.
+- Using a new `pod_name` → creates a new, empty, dedicated volume.
+- Omitting `pod_name` → uses the user's default pod and its default volume.
+- All file operations (uplink, downlink, files_list, delete) and all pod runs use this same `pod_name`-to-volume mapping.
+  - For example, running a pod with name pod `experiment-radiation` will use the `experiment-radiation` dedicated volume and mount it to the pod, under `/data`.
+
+Files stored under one `pod_name` are NOT visible from another `pod_name`.
+
+---
+
 ## **1. Uplink Files**
 
-**Endpoint:** `POST /em/files/uplink`
-**Purpose:** Upload files from the client to the EM, storing them in the user’s dedicated volume.
+**Endpoint:** `POST /em/files/uplink`  
+**Purpose:** Upload files from the client to the EM, storing them in the user's dedicated volume.
 
 **Request:**
 
 - **Headers:** `Authorization: Bearer <token>`
 - **Form Data:**
-  - `files`: List of files to upload
-  - `dest_path`: Relative path within the user’s dedicated volume where files should be placed
+  - `files`:
+    - Type: `list[string]`
+    - Required: True
+    - Description: List of files to upload
+    - Example: `[./Dockerfile, ./src/application.bin]`
+  - `dest_path`:
+    - Type: `string`
+    - Required: False
+    - Description: Relative path within the user's dedicated volume where files should be placed. If none is provided, volume root will be assumed
+    - Example: `./experiment-1`
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Specifies which persistent volume to upload to
+    - Example: `pod-a`
 
 **Response:**
 
 - `200 OK` – Success:
 
 ```json
-  {
-    "message": "Successfully uplinked files",
-    "data": {
-      "file_count": N,
-      "total_size_kb": SIZE
-    }
+{
+  "message": "Successfully uplinked files",
+  "data": {
+    "file_count": N,
+    "total_size_kb": SIZE
   }
+}
 ```
 
 - `400 BAD REQUEST` – Errors such as:
@@ -43,7 +70,7 @@ For a more detailed EM API description, checkout the swagger file `em-api.json` 
   ```json
   {
     "error": "MAX_UPLINK_SIZE_EXCEEDED",
-    "message": f"Total upload size exceeds 500 MB",
+    "message": "Total upload size exceeds 2 GB"
   }
   ```
 
@@ -51,18 +78,24 @@ For a more detailed EM API description, checkout the swagger file `em-api.json` 
 
 **Notes:**
 
-- The total size cannot exceed 500 MB per API call.
+- The total size cannot exceed 2GB per API call.
 
 ---
 
 ## **2. List Files**
 
-**Endpoint:** `GET /em/files/list`
-**Purpose:** Retrieve a list of files on the user’s dedicated volume onboard the EM, including size and hash.
+**Endpoint:** `GET /em/files/list`  
+**Purpose:** Retrieve a list of files on the user's dedicated volume onboard the EM, including size and hash.
 
 **Request:**
 
 - **Headers:** `Authorization: Bearer <token>`
+- **Query Params:**
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Specifies which persistent volume to list files from
+    - Example: `pod-a`
 
 **Response:**
 
@@ -112,55 +145,58 @@ For a more detailed EM API description, checkout the swagger file `em-api.json` 
 
 ## **3. Downlink File**
 
-**Endpoint:** `GET /em/files/downlink`
-**Purpose:** Downlink a file from the user’s dedicated volume on the EM. File data is returned in base64 encoding in the response.
+**Endpoint:** `GET /em/files/downlink`  
+**Purpose:** Downlink a file from the user's dedicated volume on the EM. File is streamed as binary content with appropriate headers.
 
 **Request:**
 
 - **Headers:** `Authorization: Bearer <token>`
 - **Query Params:**
-  - `filepath` – Path of the file relative to the user’s dedicated volume
-
-**Behavior:**
+  - `filepath`:
+    - Type: `string`
+    - Required: False
+    - Description: Path of the file relative to the user's dedicated volume
+    - Example: `./results/data.txt`
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Specifies which persistent volume to downlink from.
+    - Example: `pod-a`
 
 **Response:**
 
-- `200 OK` – Success:
-
-```json
-{
-  "content": "<base64-encoded>",
-  "filename": "example.txt",
-  "size": 12345,
-  "hash": "<sha256-hash>"
-}
-```
-
+- `200 OK` – Success: File content streamed with `Content-Disposition` header containing filename
 - `400 BAD REQUEST` – Error in path provided
-- `403 FORBIDDEN` - Illegal path provided
+- `403 FORBIDDEN` – Illegal path provided
 - `404 NOT FOUND` – File missing
 - `423 LOCKED` – If CG2 is busy
 - `500 INTERNAL ERROR` – Server side error
 
-  **Notes:**
+**Notes:**
 
-- Encodes content in base64, returns metadata including size and SHA256 hash.
+- Returns file as a stream with metadata in headers including `Content-Disposition` with filename.
 
 ---
 
 ## **4. Delete File / Folder**
 
-**Endpoint:** `POST /em/files/delete`
-**Purpose:** Remove a file or a folder from the user’s dedicated volume.
+**Endpoint:** `POST /em/files/delete`  
+**Purpose:** Remove a file or a folder from the user's dedicated volume.
 
 **Request:**
 
 - **Headers:** `Authorization: Bearer <token>`
-- **JSON Body:** `{ "filepath": "<relative_path>" }`
-
-**Behavior:**
-
-- Remove the target file path.
+- **Form Data:**
+  - `filepath`:
+    - Type: `string`
+    - Required: False
+    - Description: Relative path to the file or folder
+    - Example: `./config/incorrect_config.yaml`
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Specifies which persistent volume to delete from
+    - Example: `pod-a`
 
 **Response:**
 
@@ -173,26 +209,38 @@ For a more detailed EM API description, checkout the swagger file `em-api.json` 
 
 ## **5. Build Docker Image**
 
-**Endpoint:** `POST /em/pod/image/build`
-**Purpose:** Build a Docker image using a provided Dockerfile and context. The user's name will be prepended to the Docker Image provided.
+**Endpoint:** `POST /em/pod/image/build`  
+**Purpose:** Build a Docker image using a provided Dockerfile and context.
 
 **Request:**
 
 - **Headers:** `Authorization: Bearer <token>`
-- **JSON Body:**
-
-```json
-{
-  "dockerfile": "<path_relative_to_volume>",
-  "context": "<context_path>",
-  "image_name": "<desired_image_name>"
-}
-```
+- **Form Data:**
+  - `dockerfile`:
+    - Type: `string`
+    - Required: True
+    - Description: Path to Dockerfile relative to volume
+    - Example: `test-exp-3/Dockerfile`
+  - `context`:
+    - Type: `string`
+    - Required: True
+    - Description: Build context path
+    - Example: `test-exp-3/`
+  - `image`:
+    - Type: `string`
+    - Required: True
+    - Description: Desired Docker image name
+    - Example: `experiment3-new-application`
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Specifies which persistent volume to use for build context (optional)
+    - Example: `pod-a`
 
 **Behavior:**
 
 - Validates paths and constructs image name with user prefix.
-- When the build fails, the last 100 lines of the Docker Build logs will be returned in the response.
+- When the build fails, the last 100 lines of the Docker Build logs will be returned in the response. Previous Docker operations might be included in these logs.
 
 **Response:**
 
@@ -239,13 +287,28 @@ For a more detailed EM API description, checkout the swagger file `em-api.json` 
 
 ## **6. Load Docker Image**
 
-**Endpoint:** `POST /em/image/load`
-**Purpose:** Load a Docker image from a tar file. The `image` name provided in the request must match the one used during the docker build.
+**Endpoint:** `POST /em/pod/image/load`  
+**Purpose:** Load a Docker image from a tar file. The `image` name provided in the request must match the one used during the Docker build. The tar file must already be present onboard.
 
 **Request:**
 
 - **Headers:** `Authorization: Bearer <token>`
-- **JSON Body:** `{ "tarfile": "<path_relative_to_volume>", "image":<image_name> }`
+- **Form Data:**
+  - `tarfile`:
+    - Type: `string`
+    - Required: True
+    - Description: Path to tar file relative to volume
+    - Example: `images/experiment-2.tar`
+  - `image`:
+    - Type: `string`
+    - Required: True
+    - Description: Image name. Must match the name used during Docker build before creating the tarfile.
+    - Example: `experiment-2-bis`
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Specifies which persistent volume contains the tarfile
+    - Example: `pod-a`
 
 **Response:**
 
@@ -269,8 +332,8 @@ For a more detailed EM API description, checkout the swagger file `em-api.json` 
 
 ## **7. List Docker Images**
 
-**Endpoint:** `GET /em/image/list`
-**Purpose:** Retrieve a list of Docker images available for the user. Returns a JSON array of all the docker images built and loaded by the user.
+**Endpoint:** `GET /em/pod/image/list`  
+**Purpose:** Retrieve a list of Docker images available for the user. Returns a JSON array of all the Docker images built and loaded by the user. Publicly available Docker images are not listed here.
 
 **Request:**
 
@@ -280,56 +343,120 @@ For a more detailed EM API description, checkout the swagger file `em-api.json` 
 
 - `200 OK` – Success: `{ "message": "Successfully loaded list of docker images", "data": [ ... ] }`
 - `423 LOCKED` – If CG2 is busy
-- `500 INTERNAL ERROR` – JSON parsing or SCP failures
+- `500 INTERNAL ERROR` – Internal Server Error
 
 ---
 
-## **8. Execute DPhi Pod**
+## **8. Create Namespace**
 
-**Endpoint:** `POST /em/pod/execution`
+**Endpoint:** `POST /em/pod/namespace/create`  
+**Purpose:** Request a namespace creation for user owned inter-pod communication. Creates a namespace with the username as a prefix, enabling DPhi Pods of the given user to communicate with each other onboard. Pods must be requested to run inside the namespace by setting the namespace flag on the request.
+
+**Request:**
+
+- **Headers:** `Authorization: Bearer <token>`
+
+**Response:**
+
+- `200 OK` – Success: `{ "message": "Namespace created successfully" }`
+- `400 BAD REQUEST` – Namespace creation failed
+- `423 LOCKED` – If CG2 is busy
+- `500 INTERNAL ERROR` – Internal server error
+
+**Notes:**
+
+- Required before pods can expose ports and communicate with each other
+- All pods running with `namespace=true` will be placed in this private namespace
+
+---
+
+## **9. Execute DPhi Pod**
+
+**Endpoint:** `POST /em/pod/run`  
 **Purpose:** Run a container/pod with a specified Docker image.
 
 **Request:**
 
 - **Headers:** `Authorization: Bearer <token>`
-- **JSON Body:**
-
-```json
-{
-  "docker_image": "<image_name>", // required
-  "max_duration": 30, // required
-  "node": "FPGA", // required
-  "scheduled_time": "<time in isoformat>", // optional
-  "command": "<command>" // optional
-}
-```
+- **Form Data:**
+  - `image` :
+    - Type: `string`
+    - Required: True
+    - Description: Docker image name
+    - Example: `python:3.11-alpine`
+  - `max_duration`:
+    - Type: `int`
+    - Required: True
+    - Description: Maximum execution time in minutes
+    - Example: `30`
+  - `node`:
+    - Type: `string`
+    - Required: True
+    - Description: Target node on which to run the DPhi Pod - FPGA, GPU, or MPU.
+    - Example: `FPGA`
+  - `scheduled_time`
+    - Type: `string`
+    - Required: False
+    - Description: ISO format timestamp with timezone.
+    - Example: `2025-05-22T12:10:00+02:00`
+  - `command` <string>
+    - Type: `string`
+    - Required: False
+    - Description: Override default Docker image command.
+    - Example: `echo 'is it this simple to run in space?' > hello-space.txt`
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Specifies which persistent volume to mount at /data.
+    - Example: `experiment-radiation`
+  - `ports`:
+    - Type: `list[int]`
+    - Required: False
+    - Description: List of ports to expose. It requires the namespace to be created beforehand.
+    - Example: `[80, 1999, 14]`
+  - `namespace`:
+    - Type: `bool`
+    - Required: False
+    - Description: Run pod in private namespace.
+    - Example: `[80, 1999, 14]`
 
 **Response:**
 
 - `200 OK` – Success: `{ "message": "Docker run scheduled successfully" }`
+- `400 BAD REQUEST` – Invalid parameters
 - `423 LOCKED` – If CG2 is busy
 - `500 INTERNAL ERROR` – Execution failure
 
-Notes:
+**Notes:**
 
 - The DPhi Pod will be gracefully stopped by the system after the execution time goes over max_duration in minutes.
 - `scheduled_time` must be provided in ISO format with timezone, e.g. `2025-05-22T12:10:00+02:00`
 - Providing the `command` parameter will override the Docker image's default command. If none is provided, the default command embedded in the Docker image will be executed.
+- Each `pod_name` maps to a dedicated persistent volume:
+  - Using an existing `pod_name` mounts its existing volume (files preserved)
+  - Using a new `pod_name` creates a new, empty volume
+  - Omitting `pod_name` uses the user's default pod and its default volume
+- Port exposure requires:
+  - A namespace must be created first using the namespace creation endpoint
+  - The `namespace` parameter must be set to `true`
+  - Pods in the same namespace can communicate via `<username>-<`pod_name`>:<port>`
 
 ---
 
-## **9. Check DPhi Pod Status**
+## **10. Check DPhi Pod Status**
 
-**Endpoint:** `GET /em/pod/status`
+**Endpoint:** `GET /em/pod/status`  
 **Purpose:** Get the current DPhi Pod status. When a DPhi Pod is scheduled, it will always succeed, even though the deployment might be blocked (e.g. incorrect image name, node selected not yet available). Therefore, always check the DPhi Pods status after scheduling it.
 
 **Request:**
 
 - **Headers:** `Authorization: Bearer <token>`
-
-**Behavior:**
-
-- Retrieves the current DPhi Pod status
+- **Query Params:**
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Identifies which pod instance to query
+    - Example: `pod-a`
 
 **Response:**
 
@@ -370,10 +497,11 @@ Notes:
 
 ---
 
-### **Shared Behaviors**
+## **Shared Behaviors**
 
 - All endpoints require **authenticated users**.
-- Concurrent requests will return error `423 LOCKED` prevents concurrent requests.
+- Error code `423 LOCKED` prevents concurrent requests.
+- All file operations and pod executions respect the `pod_name`-to-volume mapping described in the Storage Model section.
 
 ---
 
