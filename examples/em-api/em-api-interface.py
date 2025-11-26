@@ -376,7 +376,6 @@ def example_pod_intercommunication():
             command="python -m http.server 80",
         )
     )
-    time.sleep(1)
 
     print(
         "\nNow we run the client pod, which must also set the namespace flag. It fetches data from the server pod and saves it to its own private volume:"
@@ -390,7 +389,6 @@ def example_pod_intercommunication():
             command="wget client1-server:80/ -O /data/server-data.txt",
         )
     )
-    time.sleep(1)
     print("\nLets check the files it generated:")
     print(json.dumps(files_list(pod_name="client"), indent=4))
     print("\nAnd downlink it:")
