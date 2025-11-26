@@ -399,7 +399,7 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
     - Required: False
     - Description: ISO format timestamp with timezone.
     - Example: `2025-05-22T12:10:00+02:00`
-  - `command` <string>
+  - `command`
     - Type: `string`
     - Required: False
     - Description: Override default Docker image command.

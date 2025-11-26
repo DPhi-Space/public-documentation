@@ -539,4 +539,5 @@ if __name__ == "__main__":
     # Try to authenticate
     if not get_token():
         exit(1)
-    example_pod_intercommunication()
+    example_pod_volumes()
+    # example_pod_intercommunication()
