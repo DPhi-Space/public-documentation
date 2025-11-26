@@ -1,5 +1,30 @@
-import os
+"""
+DPhi EM API Client Example
+--------------------------
 
+This script demonstrates how to interact programmatically with the CG2 EM API. It provides helper functions for authentication, file transfers, Docker image operations, and launching DPhi Pods on the EM. The goal is to offer a simple, local Python client that interacts with the provided EM API and makes it easy to automate workflows, manage pod runs, and inspect user-owned files inside the managed environment.
+
+CG2 DPhi Pods Storage Model
+----------------------
+
+Each DPhi Pod name ("pod_name") corresponds to a unique persistent private
+volume (PVC). The rules are:
+
+- Using an existing pod_name -> reuses the same volume and its stored files.
+- Using a new pod_name -> creates a new, empty, dedicated volume.
+- Omitting pod_name -> uses the user's default pod and its default volume.
+- All file operations (uplink, downlink, files_list, delete) and all pod runs
+  use this same pod_name-to-volume mapping.
+
+Files stored under one pod_name are NOT visible from another pod_name.
+
+This is important when:
+- Uploading files before running a pod
+- Running multiple pods that should share or isolate data
+- Accessing build contexts or configuration files inside different volumes
+"""
+
+import os
 from datetime import datetime, timezone, timedelta
 import base64
 import json
@@ -12,7 +37,7 @@ TOKEN = None
 
 # Default credentials for testing
 username = "client1"
-password = "dphi_software!"
+password = ""
 
 
 # ============================================================
@@ -101,12 +126,13 @@ def authorized_post(url, **kwargs):
 # ============================================================
 
 
-def uplink(filepaths, dest_path=""):
+def uplink(filepaths, dest_path="", pod_name=""):
     """
-    Upload multiple files to the users dedicated volume on CG2.
+    Upload files to the volume associated with `pod_name`.
 
     filepaths: list of local paths to upload
     dest_path: remote destination folder
+    pod_name (optional): selects which persistent volume the files are uploaded to. Uses the pod_name storage rules defined at the top of this file.
     """
     ensure_token()
     headers = {"Authorization": f"Bearer {TOKEN}"}
@@ -121,7 +147,7 @@ def uplink(filepaths, dest_path=""):
         BASE_URL + "em/files/uplink",
         headers=headers,
         files=files_to_upload,
-        data={"dest_path": dest_path},
+        data={"dest_path": dest_path, "pod_name": pod_name},
     )
 
     # Clean up file handles
@@ -131,58 +157,80 @@ def uplink(filepaths, dest_path=""):
     return response.json()
 
 
-def files_list():
+def files_list(pod_name=""):
     """
-    Retrieve a list of files on the users dedicated volume on CG2.
+    List files stored in the volume associated with `pod_name`.
+
+    pod_name (optional): selects which persistent volume to inspect. Uses the pod_name storage rules defined at the top of this file.
     """
-    response = authorized_get(BASE_URL + "/em/files/list")
+    response = authorized_get(
+        BASE_URL + "/em/files/list",
+        params={"pod_name": pod_name} or {},
+    )
     return response.json()
 
 
-def downlink(filepath, downlink_folder="downlink/"):
+def downlink(filepath, downlink_folder="downlink/", pod_name=""):
     """
-    Downlink a file from the users dedicated volume and save it locally.
+    Downlink a file from the volume associated with `pod_name`.
 
-    Backend returns base64 content + metadata.
-
-    filepath: filepath onboard to donwlink
-    downlink_folder: local destination folder where to downlink the file
+    filepath: filepath on the user's private volume to downlink.
+    downlink_folder(optional): local folder where to downlink the files requested.
+    pod_name (optional): selects which persistent volume to downlink from. Uses the pod_name storage rules defined at the top of this file.
     """
-    response = authorized_get(
+
+    ensure_token()
+    headers = {"Authorization": f"Bearer {TOKEN}"}
+
+    # Streaming GET request
+    with requests.get(
         BASE_URL + "/em/files/downlink",
-        params={"filepath": filepath},
-    )
+        headers=headers,
+        params={"filepath": filepath, "pod_name": pod_name},
+        stream=True,
+    ) as response:
+        if response.status_code != 200:
+            # Parse JSON error and return it
+            try:
+                return response.json()
+            except Exception:
+                return {"error": "UNKNOWN_ERROR", "status": response.status_code}
 
-    if response.status_code != 200:
-        return response.json()
+        # Extract the filename from `Content-Disposition`
+        cd = response.headers.get("Content-Disposition", "")
+        filename = "downloaded_file"
 
-    data = response.json()
+        if "filename=" in cd:
+            filename = cd.split("filename=", 1)[1].strip('"')
 
-    # Decode BASE64 content
-    filename = data["filename"]
-    file_bytes = base64.b64decode(data["content"])
+        # Prepare local folder
+        os.makedirs(downlink_folder, exist_ok=True)
+        local_path = os.path.join(downlink_folder, filename)
 
-    # Prepare local folder
-    os.makedirs(downlink_folder, exist_ok=True)
-    local_path = os.path.join(downlink_folder, filename)
+        # Write file to disk in chunks
+        with open(local_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=1024 * 1024):  # 1 MB chunks
+                if chunk:
+                    f.write(chunk)
 
-    # Write file
-    with open(local_path, "wb") as f:
-        f.write(file_bytes)
+        print(f"File '{filename}' saved to {local_path}")
+        return {
+            "filename": filename,
+            "local_path": local_path,
+            "size_bytes": os.path.getsize(local_path),
+        }
 
-    print(f"File '{filename}' saved to {local_path}")
-    return data
 
-
-def delete(filepath):
+def delete(filepath, pod_name=""):
     """
-    Delete a file on the users dedicated folder on CG2.
+    Delete a file or folder from the volume associated with `pod_name`.
 
-    filepath: filepath to delete onboard. Can be a folder or a file.
+    filepath: filepath on the user's private volume to delete onboard. Can be a folder or a file.
+    pod_name (optional): selects which persistent volume to modify. Uses the pod_name storage rules defined at the top of this file.
     """
     response = authorized_post(
         BASE_URL + "em/files/delete",
-        data={"filepath": filepath},
+        data={"filepath": filepath, "pod_name": pod_name},
     )
     return response.json()
 
@@ -194,11 +242,13 @@ def delete(filepath):
 
 def image_build(dockerfile, image, context="."):
     """
-    Build a Docker image on CG2. The image is built on an air-gapped environment.
+    Build a Docker image using files located in the user's volume. The Dockerfile and build context must exist in the volume associated with `pod_name` (see storage model at top of file).
+
 
     dockerfile: Dockerfile path onboard to build the Docker image from
     image: Docker image name to tag the resulting build
     context: Docker build context from where to fetch the application source files
+    pod_name (optional): selects which persistent volume to use. Uses the pod_name storage rules defined at the top of this file.
     """
     response = authorized_post(
         BASE_URL + "em/pod/image/build",
@@ -209,10 +259,12 @@ def image_build(dockerfile, image, context="."):
 
 def image_load(tarfile, image):
     """
-    Load a Docker image tarball on CG2.
+    Load a Docker image tarball located in the user's volume. The tarfile must exist in the volume associated with `pod_name` (see storage model at top of file).
+
 
     tarfile: File path from where to load the tar file of the Docker image.
     image: Docker image name from the tarfile. This parameter must match the Docker image name used during the build before creating the tar file.
+    pod_name (optional): selects which persistent volume to use. Uses the pod_name storage rules defined at the top of this file.
     """
     response = authorized_post(
         BASE_URL + "em/pod/image/load",
@@ -257,7 +309,14 @@ def run(
     max_duration: maximum execution duration of the DPhi Pod in minutes before the system stops it gracefully.
     command(optional): linux bash command to run in the DPhi Pod. If none is provided, the default command embedded in the Docker image will be executed.
     scheduled_time(optional): schedule time when to run the DPhi Pod. If none is provided, it will be scheduled as soon as possible. The time must be provided in ISO format with timezone, e.g. 2025-05-22T12:10:00+02:00.
-    pod_name(optional): sets the name of the DPhi Pod to run. DPhi Pod Names and dedicated volumes are linked. Meaning that running a pod with a different name will create a new dedicated volume with no data shared with previous pods runned with different names. When no name is provide, the default one is used and all the data is shared with the previous pods ran with the default name. Setting the name is especially useful when
+    pod_name (optional):
+        Specifies which persistent volume the pod will use for its /data directory.
+        Each pod_name maps to a dedicated volume:
+        - Using an existing pod_name mounts its existing volume (files preserved).
+        - Using a new pod_name creates a new, empty volume.
+        - Omitting pod_name uses the user's default pod and its default volume.
+        All file operations (uplink, downlink, files_list, delete) access the same
+        volume selected here. See the storage model at the top of the file.
     ports(optional): sets the ports to be exposed for this DPhi Pod. This allows the pod to expose a service to others pods running in the same namespace. Therefore, a namespace must be created before and the namespace parameter must be set to true for the ports to be taken into account.
     namespace(optional): sets the pod to be run inside a private namespace for the user, in which different pods can communicate between each other through the exposed ports. A namespace must be created beforehand.
 
@@ -278,11 +337,16 @@ def run(
     return response.json()
 
 
-def pod_status():
+def pod_status(pod_name=""):
     """
-    Get current DPhi Pod execution status.
+    Retrieve the status of the DPhi Pod associated with `pod_name`.
+
+    pod_name (optional): Identifies which pod instance to query. Note that
+    storage volumes also follow the pod_name rules defined at the top.
     """
-    response = authorized_get(BASE_URL + "em/pod/status")
+    response = authorized_get(
+        BASE_URL + "em/pod/status", params={"pod_name": pod_name} or {}
+    )
     return response.json()
 
 
@@ -294,6 +358,57 @@ if __name__ == "__main__":
     # Try to authenticate
     if not get_token():
         exit(1)
+
+        # print(image_load("server.tar", "server"))
+        # namespace_create()
+        # time.sleep(5)
+        # print(
+        #    run(
+        #        "python:3.11-alpine",
+        #        pod_name="server",
+        #        max_duration=30,
+        #        namespace=True,
+        #        ports=[80],
+        #        command="python -m http.server 80",
+        #    )
+        # )
+
+    print(json.dumps(files_list(pod_name="client"), indent=4))
+    print(
+        uplink(
+            [
+                "../00-intro.md",
+            ],
+            pod_name="client",
+        )
+    )
+    print(json.dumps(files_list(pod_name="client"), indent=4))
+    print(json.dumps(delete("00-intro.md", pod_name="client"), indent=4))
+    print(json.dumps(files_list(pod_name="client"), indent=4))
+
+    print(downlink("00-intro.md", pod_name="client"))
+    exit(1)
+    print(run("echo-test", max_duration=1))
+    print(
+        run(
+            "python:3.11-alpine",
+            pod_name="client",
+            max_duration=1,
+            namespace=True,
+            command="wget client1-server:80/ -O /data/server-data.txt",
+        )
+    )
+    print(
+        run(
+            "python:3.11-alpine",
+            pod_name="client",
+            max_duration=1,
+            namespace=True,
+            command="wget client1-server:80/ -O /data/server-data.txt",
+        )
+    )
+
+    exit(1)
 
     print("\n=== FILE LIST ===")
     print(json.dumps(files_list(), indent=4))
