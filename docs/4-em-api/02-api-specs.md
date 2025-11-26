@@ -25,9 +25,21 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
 
 - **Headers:** `Authorization: Bearer <token>`
 - **Form Data:**
-  - `files`: List of files to upload
-  - `dest_path`: Relative path within the user's dedicated volume where files should be placed (optional)
-  - `pod_name`: Specifies which persistent volume to upload to (optional)
+  - `files`:
+    - Type: `list[string]`
+    - Required: True
+    - Description: List of files to upload
+    - Example: `[./Dockerfile, ./src/application.bin]`
+  - `dest_path`:
+    - Type: `string`
+    - Required: False
+    - Description: Relative path within the user's dedicated volume where files should be placed. If none is provided, volume root will be assumed
+    - Example: `./experiment-1`
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Specifies which persistent volume to upload to
+    - Example: `pod-a`
 
 **Response:**
 
@@ -79,7 +91,11 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
 
 - **Headers:** `Authorization: Bearer <token>`
 - **Query Params:**
-  - `pod_name`: Specifies which persistent volume to list files from (optional)
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Specifies which persistent volume to list files from
+    - Example: `pod-a`
 
 **Response:**
 
@@ -136,8 +152,16 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
 
 - **Headers:** `Authorization: Bearer <token>`
 - **Query Params:**
-  - `filepath`: Path of the file relative to the user's dedicated volume
-  - `pod_name`: Specifies which persistent volume to downlink from (optional)
+  - `filepath`:
+    - Type: `string`
+    - Required: False
+    - Description: Path of the file relative to the user's dedicated volume
+    - Example: `./results/data.txt`
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Specifies which persistent volume to downlink from.
+    - Example: `pod-a`
 
 **Response:**
 
@@ -163,8 +187,16 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
 
 - **Headers:** `Authorization: Bearer <token>`
 - **Form Data:**
-  - `filepath`: Relative path to the file or folder
-  - `pod_name`: Specifies which persistent volume to delete from (optional)
+  - `filepath`:
+    - Type: `string`
+    - Required: False
+    - Description: Relative path to the file or folder
+    - Example: `./config/incorrect_config.yaml`
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Specifies which persistent volume to delete from
+    - Example: `pod-a`
 
 **Response:**
 
@@ -184,10 +216,26 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
 
 - **Headers:** `Authorization: Bearer <token>`
 - **Form Data:**
-  - `dockerfile`: Path to Dockerfile relative to volume
-  - `context`: Build context path
-  - `image`: Desired image name
-  - `pod_name`: Specifies which persistent volume to use for build context (optional)
+  - `dockerfile`:
+    - Type: `string`
+    - Required: True
+    - Description: Path to Dockerfile relative to volume
+    - Example: `test-exp-3/Dockerfile`
+  - `context`:
+    - Type: `string`
+    - Required: True
+    - Description: Build context path
+    - Example: `test-exp-3/`
+  - `image`:
+    - Type: `string`
+    - Required: True
+    - Description: Desired Docker image name
+    - Example: `experiment3-new-application`
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Specifies which persistent volume to use for build context (optional)
+    - Example: `pod-a`
 
 **Behavior:**
 
@@ -246,9 +294,21 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
 
 - **Headers:** `Authorization: Bearer <token>`
 - **Form Data:**
-  - `tarfile`: Path to tar file relative to volume
-  - `image`: Image name (must match the name used during Docker build)
-  - `pod_name`: Specifies which persistent volume contains the tarfile (optional)
+  - `tarfile`:
+    - Type: `string`
+    - Required: True
+    - Description: Path to tar file relative to volume
+    - Example: `images/experiment-2.tar`
+  - `image`:
+    - Type: `string`
+    - Required: True
+    - Description: Image name. Must match the name used during Docker build before creating the tarfile.
+    - Example: `experiment-2-bis`
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Specifies which persistent volume contains the tarfile
+    - Example: `pod-a`
 
 **Response:**
 
@@ -392,7 +452,11 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
 
 - **Headers:** `Authorization: Bearer <token>`
 - **Query Params:**
-  - `pod_name`: Identifies which pod instance to query (optional)
+  - `pod_name`:
+    - Type: `string`
+    - Required: False
+    - Description: Identifies which pod instance to query
+    - Example: `pod-a`
 
 **Response:**
 

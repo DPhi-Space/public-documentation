@@ -1,6 +1,6 @@
 # Python Client Example
 
-The `em-api-interface.py` script exemplifies how to create a client wrapper for the EM API specifications. It can be found under the `examples/em-api/` folder, with all the necessary support files for running the examples.
+The `em-api-interface.py` script exemplifies how to create a client wrapper for the EM API specifications. It can be found under the [`examples/em-api/`](/examples/em-api/em-api-interface.py) folder, with all the necessary support files for running the examples.
 
 ## Overview
 
@@ -9,7 +9,7 @@ This Python client provides a simple interface for interacting with the CG2 EM A
 ## Key Features
 
 - **Automatic authentication** with token management and refresh
-- **File operations**: upload (uplink), download (downlink), list, and delete files
+- **File operations**: uplink, downlink, list, and delete files
 - **Docker image management**: build from Dockerfile, load from tarball, and list available images
 - **Pod execution**: run containers on FPGA, GPU, or MPU nodes with scheduling support
 - **Namespace management**: create namespaces for inter-pod communication
@@ -44,7 +44,7 @@ Before diving into examples, it's important to understand how storage works:
 - Omitting `pod_name` → uses your default volume
 - Files in one pod's volume are NOT visible to other pods
 
-This applies to all operations: file uploads/downloads, Docker builds, and pod runs.
+This applies to all operations: file uplink/downlink, Docker builds, and pod runs.
 
 ## Examples
 
@@ -57,12 +57,12 @@ This example demonstrates the basic workflow for working with files and running 
 **What it does:**
 
 - Lists files in the default volume
-- Uploads a Dockerfile and shell script to a specific directory
+- Uplinks a Dockerfile and shell script to a specific directory
 - Builds a Docker image from the uploaded files
 - Runs the image on the default FPGA node
 - Runs the same image on GPU with a custom command
 - Schedules a pod to run at a specific future time
-- Downloads generated output files
+- Downlinks generated output files
 - Cleans up by deleting uploaded and generated files
 
 **Key concepts:**
@@ -104,10 +104,10 @@ This example demonstrates the pod-name-to-volume storage model:
 - Creates a named pod (`pod-a`) which gets its own dedicated volume
 - Runs a command that writes a file to the pod's volume
 - Lists files specific to `pod-a`'s volume
-- Uploads files specifically to `pod-a`'s volume
+- Uplinks files specifically to `pod-a`'s volume
 - Shows that files in `pod-a` are not visible in the default volume
 - Demonstrates that file operations must specify the correct `pod_name`
-- Downloads and deletes files from the specific pod volume
+- Downlinks and deletes files from the specific pod volume
 
 **Key concepts:**
 
@@ -147,7 +147,7 @@ This example demonstrates how to make pods communicate within a private namespac
 - Starts a server pod that exposes port 80
 - Starts a client pod that fetches data from the server
 - Shows how pods reference each other using `<username>-<pod_name>:<port>`
-- Downloads the fetched data from the client pod's volume
+- Downlinks the fetched data from the client pod's volume
 
 **Key concepts:**
 
@@ -188,7 +188,7 @@ downlink("server-data.txt", pod_name="client")
 
 The script includes an `examples_errors()` function that demonstrates common error scenarios:
 
-- Attempting to download non-existent files
+- Attempting to downlink non-existent files
 - Building with incorrect context paths
 - Running non-existent Docker images
 - Checking pod status when deployment fails
@@ -236,13 +236,6 @@ To run the examples:
 # Run all examples
 python em-api-interface.py
 
-# Or import and run specific examples
-python
->>> from em_api_interface import *
->>> get_token()
->>> example_simple_operations()
->>> example_pod_volumes()
->>> example_pod_intercommunication()
 ```
 
 ## Configuration
@@ -252,7 +245,7 @@ Default configuration in the script:
 ```python
 BASE_URL = "http://localhost:8000/"
 username = "client1"
-password = "dphi_software!"
+password = ""
 ```
 
 Modify these variables to match your environment and credentials.
@@ -263,12 +256,10 @@ Modify these variables to match your environment and credentials.
 2. **Specify pod_name** when working with multiple volumes to avoid confusion
 3. **Create namespace before** using port exposure features
 4. **Use meaningful pod names** to keep track of different volumes
-5. **Clean up resources** by deleting unused files and volumes
+5. **Clean up resources** by deleting unused files
 6. **Handle errors gracefully** - the API returns detailed error messages
 
 ## Next Steps
 
-- Review the [API Specifications](link-to-specs) for detailed endpoint documentation
+- Review the [API Specifications](/docs/4-em-api/02-api-specs.md) for detailed endpoint documentation
 - Check the [Swagger documentation](https://editor.swagger.io/) with `em-api.json`
-- Experiment with the examples and modify them for your use case
-- Build your own workflows combining these operations
