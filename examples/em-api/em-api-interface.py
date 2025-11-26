@@ -37,7 +37,7 @@ TOKEN = None
 
 # Default credentials for testing
 username = "client1"
-password = ""
+password = "dphi_software!"
 
 
 # ============================================================
@@ -358,35 +358,61 @@ if __name__ == "__main__":
     # Try to authenticate
     if not get_token():
         exit(1)
-
-        # print(image_load("server.tar", "server"))
-        # namespace_create()
-        # time.sleep(5)
-        # print(
-        #    run(
-        #        "python:3.11-alpine",
-        #        pod_name="server",
-        #        max_duration=30,
-        #        namespace=True,
-        #        ports=[80],
-        #        command="python -m http.server 80",
-        #    )
-        # )
-
-    print(json.dumps(files_list(pod_name="client"), indent=4))
+    print("\n=== DIFFERENT PODS MANIPULATIONS ===")
+    print(
+        "Lets run a pod with a specified name, pod-a, which will create a new empty private volume for it:"
+    )
+    print(
+        run(
+            "python:3.11-alpine",
+            pod_name="pod-a",
+            max_duration=30,
+            namespace=True,
+            ports=[80],
+            command="echo 'Is this the final frontier?' > /data/hello-space.txt",
+        )
+    )
+    print(
+        "\nThen we will fetch the files from pod-a, which lives in a dedicated private persistent volume for it:"
+    )
+    print(json.dumps(files_list(pod_name="pod-a"), indent=4))
+    print("\nThen we uplink a file for this specific pod:")
     print(
         uplink(
             [
-                "../00-intro.md",
+                "hello-world.txt",
             ],
-            pod_name="client",
+            pod_name="pod-a",
         )
     )
-    print(json.dumps(files_list(pod_name="client"), indent=4))
-    print(json.dumps(delete("00-intro.md", pod_name="client"), indent=4))
-    print(json.dumps(files_list(pod_name="client"), indent=4))
+    print("\nRechecking the files, we can see that it has been correctly uploaded:")
+    print(json.dumps(files_list(pod_name="pod-a"), indent=4))
+    print(
+        "\nIf we check our default private volume, we can see it does not contain the hello-world.txt file:"
+    )
+    print(json.dumps(files_list(), indent=4))
+    print(
+        "\nIf we try to delete hello-world.txt without specifying the pod name, it will fail as it assumes the default private volume:"
+    )
+    print(json.dumps(delete("hello-world.txt"), indent=4))
+    print("\nSo we specify pod-a for it to succeed:")
+    print(json.dumps(delete("hello-world.txt", pod_name="pod-a"), indent=4))
+    print("\nSame goes for downlinking files:")
+    print(json.dumps(downlink("hello-space.txt", pod_name="pod-a"), indent=4))
+    print("\nAnd we confirm by checking it's files:")
+    print(json.dumps(files_list(pod_name="pod-a"), indent=4))
 
-    print(downlink("00-intro.md", pod_name="client"))
+    # print(
+    #    run(
+    #        "python:3.11-alpine",
+    #        pod_name="server",
+    #        max_duration=30,
+    #        namespace=True,
+    #        ports=[80],
+    #        command="python -m http.server 80",
+    #    )
+    # )
+
     exit(1)
     print(run("echo-test", max_duration=1))
     print(
