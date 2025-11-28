@@ -37,7 +37,7 @@ TOKEN = None
 
 # Default credentials for testing
 username = "client1"
-password = "dphi_software!"
+password = ""
 
 
 # ============================================================
@@ -230,7 +230,7 @@ def delete(filepath, pod_name=""):
     """
     response = authorized_post(
         BASE_URL + "em/files/delete",
-        data={"filepath": filepath, "pod_name": pod_name},
+        json={"filepath": filepath, "pod_name": pod_name},
     )
     return response.json()
 
@@ -242,17 +242,17 @@ def delete(filepath, pod_name=""):
 
 def image_build(dockerfile, image, context=".", pod_name=""):
     """
-    Build a Docker image using files located in the user's volume. The Dockerfile and build context must exist in the volume associated with `pod_name` (see storage model at top of file).
+    build a docker image using files located in the user's volume. the dockerfile and build context must exist in the volume associated with `pod_name` (see storage model at top of file).
 
 
-    dockerfile: Dockerfile path onboard to build the Docker image from
-    image: Docker image name to tag the resulting build
-    context (optional): Docker build context from where to fetch the application source files
-    pod_name (optional): selects which persistent volume to use. Uses the pod_name storage rules defined at the top of this file.
+    dockerfile: dockerfile path onboard to build the docker image from
+    image: docker image name to tag the resulting build
+    context (optional): docker build context from where to fetch the application source files
+    pod_name (optional): selects which persistent volume to use. uses the pod_name storage rules defined at the top of this file.
     """
     response = authorized_post(
         BASE_URL + "em/pod/image/build",
-        data={
+        json={
             "dockerfile": dockerfile,
             "image": image,
             "context": context,
@@ -273,7 +273,7 @@ def image_load(tarfile, image, pod_name=""):
     """
     response = authorized_post(
         BASE_URL + "em/pod/image/load",
-        data={"tarfile": tarfile, "image": image, "pod_name": pod_name},
+        json={"tarfile": tarfile, "image": image, "pod_name": pod_name},
     )
     return response.json()
 
@@ -305,6 +305,8 @@ def run(
     pod_name=None,
     ports=None,
     namespace=False,
+    args=None,
+    envs=None,
 ):
     """
     Run a DPhi Pod on the EM with maximum execution time in minutes.
@@ -324,11 +326,13 @@ def run(
         volume selected here. See the storage model at the top of the file.
     ports(optional): sets the ports to be exposed for this DPhi Pod. This allows the pod to expose a service to others pods running in the same namespace. Therefore, a namespace must be created before and the namespace parameter must be set to true for the ports to be taken into account.
     namespace(optional): sets the pod to be run inside a private namespace for the user, in which different pods can communicate between each other through the exposed ports. A namespace must be created beforehand.
+    envs(optional): sets environment variables inside the DPhi Pod. It must be passed as a dictionary with variable name and value mapping, e.g. {"DURATION": 60, "SIZE": 1024}.
+    args(optional): sets the arguments to be passed to the command. It must be passed as a list of arguments, e.g. ['--debug', '-f', 'output.dat'].
 
     """
     response = authorized_post(
         BASE_URL + "em/pod/run",
-        data={
+        json={
             "image": image,
             "node": node,
             "max_duration": max_duration,
@@ -337,6 +341,8 @@ def run(
             "pod_name": pod_name,
             "ports": ports,
             "namespace": namespace,
+            "args": args,
+            "envs": envs,
         },
     )
     return response.json()
@@ -529,6 +535,37 @@ def examples_errors():
         )
     )
     print(json.dumps(pod_status(), indent=4))
+    print(
+        run(
+            "echo-test",
+            node="GPU",
+            max_duration=1,
+            command="echo 123 > /data/gpu-downlink.txt",
+            pod_name="Hey-there",
+        )
+    )
+    print(json.dumps(pod_status(pod_name="Hey no whitespaces"), indent=4))
+
+
+def example_args_and_envs():
+    print(
+        "\nWe can also set environment variables and arguments for the binary or command executed:"
+    )
+    print(
+        run(
+            "echo-test",
+            max_duration=1,
+            command="/bin/sh -c",
+            args=["echo testing args $DURATION $SIZE", " > /data/test.txt"],
+            envs={"DURATION": 60, "SIZE": 1024},
+        )
+    )
+    print(downlink("test.txt"))
+    print(
+        "\nHere we can see that the environment variables have been used within the arguments passed to the echo command:\n"
+    )
+    with open("downlink/test.txt", "r") as f:
+        print(f.read())
 
 
 # ============================================================
@@ -539,5 +576,18 @@ if __name__ == "__main__":
     # Try to authenticate
     if not get_token():
         exit(1)
+    print("\n=== CLEANUP (DELETE FILES) ===")
+    print(delete("/echo-test/Dockerfile"))
+    print(delete("downlink.txt"))
+    print(delete("time.txt"))
+    print(delete("gpu-downlink.txt"))
+    print(delete("/echo-test/echo-test.sh"))
+    exit(1)
+    exmaple_simple_operations()
+    exit(1)
     example_pod_volumes()
-    # example_pod_intercommunication()
+    example_pod_intercommunication()
+    examples_errors()
+    example_args_and_envs()
+    run("echo-test", node="FPGA", max_duration=30)
+    downlink("hello-world.txt")
