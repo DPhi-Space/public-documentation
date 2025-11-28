@@ -184,6 +184,28 @@ downlink("server-data.txt", pod_name="client")
 - Be created after namespace creation
 - Use the naming convention `<username>-<pod_name>:<port>` for communication
 
+### 4. Environmental Variables and arguments (`example_env_and_args`)
+
+This example demonstrates how to use environment variables and arguments passed to the DPhi Pod.
+
+**What it does:**
+
+- Creates a pod with a command (a simple `/bin/sh -c` to spawn a terminal) that overrides the one by default in the Docker image.
+- Sets environmental variables `DURATION` and `TIME` which will be used by our command.
+- Sets arguments for the command, in which we `echo` the environment variables we set above.
+
+**Code snippet:**
+
+```python
+run(
+    "echo-test",
+    max_duration=1,
+    command="/bin/sh -c",
+    args=["echo testing args $DURATION $SIZE", " > /data/test.txt"],
+    envs={"DURATION": 60, "SIZE": 1024},
+)
+```
+
 ## Error Handling
 
 The script includes an `examples_errors()` function that demonstrates common error scenarios:
