@@ -1,6 +1,6 @@
 # Python Client Example
 
-The `em-api-interface.py` script exemplifies how to create a client wrapper for the EM API specifications. It can be found under the [`examples/em-api/`](/examples/em-api/em-api-interface.py) folder, with all the necessary support files for running the examples.
+The `em-api-interface.py` script exemplifies how to create a client wrapper for the EM API specifications. It can be found under the [`examples/em-api/`](https://github.com/DPhi-Space/public-documentation/tree/main/examples/em-api) folder, with all the necessary support files for running the examples.
 
 ## Overview
 
