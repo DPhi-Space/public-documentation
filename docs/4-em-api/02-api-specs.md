@@ -418,7 +418,17 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
     - Type: `bool`
     - Required: False
     - Description: Run pod in private namespace.
-    - Example: `[80, 1999, 14]`
+    - Example: `True`
+  - `envs`:
+    - Type: `dict{'KEY1':VALUE, 'KEY2':VALUE}`
+    - Required: False
+    - Description: Dictionary of environmental variables and their values set for the given pod. This is analogoues to setting the Docker environmental varialbles when running a container.
+    - Example: `{"DURATION": 60, "SIZE": 1024}`
+  - `args`:
+    - Type: `list[string]`
+    - Required: False
+    - Description: List of arguments to be passed to the command or entrypoint of the pod.
+    - Example: `['--debug', '-f', 'output.dat']`
 
 **Response:**
 
