@@ -1,6 +1,6 @@
 # Overview
 
-The **Engineering Model(EM) API** provides a controlled environment to test software payloads and interact with CG2 in a manner analogous to operations in orbit. This API allows developers and engineers to perform uplinks, downlinks, and manage Docker-based payloads on a ground-based test system that simulates key aspects of the onboard environment.
+The **Engineering Model (EM) API** provides a controlled environment to test software payloads and interact with CG2 in a manner analogous to operations in orbit. This API allows developers and engineers to perform uplinks, downlinks, and manage Docker-based payloads on a ground-based test system that simulates key aspects of the onboard environment.
 
 ## Purpose
 
