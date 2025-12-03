@@ -14,11 +14,11 @@ The Telemetry API reference can be found in the [Telemetry Section](/docs/2-spec
 
 The client retrieves the following data from the onboard **Telemetry API**:
 
-* **Health Status** – Confirms that the API is up and responding.
-* **Latest Telemetry** – Most recent telemetry data entries.
-* **Statistics** – Database record counts, timestamps, and related stats.
-* **Data Types** – Available telemetry types.
-* **Latest Positional Telemetry** – The latest positional data point.
+- **Health Status** – Confirms that the API is up and responding.
+- **Latest Telemetry** – Most recent telemetry data entries.
+- **Statistics** – Database record counts, timestamps, and related stats.
+- **Data Types** – Available telemetry types.
+- **Latest Positional Telemetry** – The latest positional data point.
 
 All results are saved into a single JSON file (`telemetry.json`) in the current working directory or a mapped Docker volume.
 
@@ -29,7 +29,7 @@ All results are saved into a single JSON file (`telemetry.json`) in the current 
 The API base URL is shown below, as detailed in the [Telemetry API Section](/docs/2-specs/1-telemetry.md), which also describes all available endpoints.
 
 ```
-http://satellite-telemetry.dphi-tm:8000
+http://satellite-telemetry.dphi-tm
 ```
 
 ## Setup
@@ -47,8 +47,8 @@ cd public-documentation/examples/telemetry
 
 You can run the telemetry client in **two ways**:
 
-* Inside a Docker environment (recommended)
-* Natively on your local machine (for testing or debugging)
+- Inside a Docker environment (recommended)
+- Natively on your local machine (for testing or debugging)
 
 ---
 
@@ -56,8 +56,8 @@ You can run the telemetry client in **two ways**:
 
 #### Prerequisites
 
-* [Docker](https://docs.docker.com/get-docker/)
-* [Docker Compose](https://docs.docker.com/compose/install/)
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
 #### Docker Compose Setup
 
@@ -84,13 +84,13 @@ services:
       - 0.0.0.0:8000:8000
 
   payload:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     depends_on:
       - satellite-telemetry.dphi-tm
     environment:
-    - ENVIRONMENT=DOCKER
+      - ENVIRONMENT=DOCKER
     volumes:
       - type: bind
         source: ./
@@ -137,8 +137,8 @@ This file contains the collected telemetry data in JSON format.
 
 #### Prerequisites
 
-* Python 3.8+
-* pip
+- Python 3.8+
+- pip
 
 #### Setup Environment
 
@@ -208,11 +208,11 @@ The `telemetry-api-client.py` script:
 1. Detects the runtime environment (`DOCKER` vs local).
 2. Polls the `/health` endpoint until the API is ready.
 3. Fetches all telemetry endpoints:
+   - `/api/telemetry/latest`
+   - `/api/telemetry/stats`
+   - `/api/telemetry/types`
+   - `/api/telemetry/latest?data_type=position`
 
-   * `/api/telemetry/latest`
-   * `/api/telemetry/stats`
-   * `/api/telemetry/types`
-   * `/api/telemetry/latest?data_type=position`
 4. Aggregates all results into a single dictionary.
 5. Saves everything to a JSON file (either `telemetry-docker.json` or `telemetry-native.json`).
 
@@ -220,7 +220,7 @@ The `telemetry-api-client.py` script:
 
 ## Notes
 
-* If running natively, ensure that both the **PostgreSQL** and **Telemetry API** containers are active before executing the script.
-* The client retries until the API is reachable, avoiding race conditions during startup.
+- If running natively, ensure that both the **PostgreSQL** and **Telemetry API** containers are active before executing the script.
+- The client retries until the API is reachable, avoiding race conditions during startup.
 
 ---

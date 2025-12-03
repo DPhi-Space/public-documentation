@@ -1,4 +1,4 @@
-# Frequent Asked Questions
+# FAQ
 
 ## DPhi Pod Execution
 
@@ -12,7 +12,7 @@ Why it matters?
 
 For simple jobs, running a container directly or through a DPhi Pod is essentially the same.
 
-Using a DPhi Pod enables more complex setups if needed, like scheduling, telemetry, or resource isolation.
+Using a DPhi Pod enables more complex setups if needed, like scheduling, telemetry, interpod communication or resource isolation.
 
 The DPhi Pod name was chosen to highlight user-friendliness and the fact that it’s optimized for running jobs in a space-like execution environment.
 
@@ -40,8 +40,19 @@ Because default DPhi Pods are executed with the default name, only one instance 
 
 ### What actually runs on the EM when I submit a command with the DPhi Pod run POST request?
 
-Exactly the command you typed, executed inside a standard Linux shell (/bin/sh).
-Your command is not changed — only wrapped so the shell can process it.
+Use the exact command you typed — but remember that if you want to run something like:
+
+```bash
+ls -lh > /data/files.txt
+```
+
+you must prepend the /bin/bash binary to it. For example:
+
+```bash
+/bin/bash -c "ls -lh > /data/files.txt"
+```
+
+Your original command remains the same; it just needs to be executed through bash.
 
 ### Can I use redirection, pipes, and multiple commands?
 

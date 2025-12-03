@@ -32,11 +32,10 @@ import requests
 import time
 import datetime
 
-BASE_URL = "http://localhost:8000/"
+BASE_URL = ""
 TOKEN = None
 
-# Default credentials for testing
-username = "client1"
+username = ""
 password = ""
 
 
@@ -286,16 +285,6 @@ def image_list():
     return response.json()
 
 
-def namespace_create():
-    """
-    Request a namespace creation for more complex operations where the user's DPhi Pods can communicate with each other onboard. This will create a namespace with the username as a prefix, and when DPhi Pod runs are requested to run with the namespace, they will be run in it.
-    """
-    response = authorized_post(
-        BASE_URL + "em/pod/namespace/create",
-    )
-    return response.json()
-
-
 def run(
     image,
     node="FPGA",
@@ -304,7 +293,6 @@ def run(
     scheduled_time=None,
     pod_name=None,
     ports=None,
-    namespace=False,
     args=None,
     envs=None,
 ):
@@ -324,8 +312,7 @@ def run(
         - Omitting pod_name uses the user's default pod and its default volume.
         All file operations (uplink, downlink, files_list, delete) access the same
         volume selected here. See the storage model at the top of the file.
-    ports(optional): sets the ports to be exposed for this DPhi Pod. This allows the pod to expose a service to others pods running in the same namespace. Therefore, a namespace must be created before and the namespace parameter must be set to true for the ports to be taken into account.
-    namespace(optional): sets the pod to be run inside a private namespace for the user, in which different pods can communicate between each other through the exposed ports. A namespace must be created beforehand.
+    ports(optional): sets the ports to be exposed for this DPhi Pod. This allows the pod to expose a service to others pods running owned by the user.
     envs(optional): sets environment variables inside the DPhi Pod. It must be passed as a dictionary with variable name and value mapping, e.g. {"DURATION": 60, "SIZE": 1024}.
     args(optional): sets the arguments to be passed to the command. It must be passed as a list of arguments, e.g. ['--debug', '-f', 'output.dat'].
 
@@ -340,7 +327,6 @@ def run(
             "scheduled_time": scheduled_time,
             "pod_name": pod_name,
             "ports": ports,
-            "namespace": namespace,
             "args": args,
             "envs": envs,
         },
@@ -361,48 +347,48 @@ def pod_status(pod_name=""):
 
 
 def example_pod_intercommunication():
-    print("\n========== INTER-POD COMMUNICATION WITHIN A NAMESPACE ===========")
+    print("\n========== INTER-POD COMMUNICATION  ===========")
     print(
         "In this example we want to make to pods communicate over a given port. The client pod will fetch data from the server pod, therefore the server must expose a given port."
     )
     print(
-        "\nTo allow port exposure between pods, first we must request a namespace to be created for our user:"
-    )
-    print(namespace_create())
-    print(
-        "\nThen we start the server pod. We must set the namespace flag for it to be able to expose the port to all the other pods running in the same namespace, which is private among users:"
+        "\nThen we start the server pod. We must set the list of ports to expose to all the other user-owned pods running:"
     )
     print(
         run(
             "python:3.11-alpine",
             pod_name="server",
             max_duration=2,
-            namespace=True,
             ports=[80],
             command="python -m http.server 80",
         )
     )
 
     print(
-        "\nNow we run the client pod, which must also set the namespace flag. It fetches data from the server pod and saves it to its own private volume:"
+        "\nNow we run the client pod. It fetches data from the server pod, from the port it exposes i.e. 80, and saves it to its own private volume:"
     )
     print(
         run(
             "python:3.11-alpine",
             pod_name="client",
             max_duration=1,
-            namespace=True,
-            command="wget client1-server:80/ -O /data/server-data.txt",
+            command="/usr/bin/wget",
+            args=["server:80/", "-O", "/data/server-data.txt"],
         )
     )
+    time.sleep(5)
     print("\nLets check the files it generated:")
     print(json.dumps(files_list(pod_name="client"), indent=4))
+    time.sleep(5)
+
     print("\nAnd downlink it:")
     print(json.dumps(downlink("server-data.txt", pod_name="client"), indent=4))
+
+    print("\nLets clean up the files:")
     print(json.dumps(delete("server-data.txt", pod_name="client"), indent=4))
 
 
-def exmaple_simple_operations():
+def example_simple_operations():
     print("\n========== SIMPLE OPERATIONS ==========")
     print("\n=== FILE LIST ===")
     print(json.dumps(files_list(), indent=4))
@@ -411,8 +397,8 @@ def exmaple_simple_operations():
     print(
         uplink(
             [
-                "./Dockerfile",
-                "./echo-test.sh",
+                "./simple-echo/Dockerfile",
+                "./simple-echo/echo-test.sh",
             ],
             dest_path="echo-test",
         )
@@ -431,40 +417,55 @@ def exmaple_simple_operations():
     print(run("echo-test", max_duration=1))
     time.sleep(2)
     print(json.dumps(pod_status(), indent=4))
-    time.sleep(10)
+    time.sleep(30)
 
     print(
         run(
             "echo-test",
             node="GPU",
             max_duration=1,
-            command="echo 123 > /data/gpu-downlink.txt",
+            command="/bin/sh",
+            args=[
+                "-c",
+                "echo 'if knowledge can create problems, it is not through ignorance that we can solve them' > /data/gpu-downlink.txt",
+            ],
         )
     )
-    print(json.dumps(pod_status(), indent=4))
+    time.sleep(5)
 
-    time.sleep(10)
+    print(json.dumps(pod_status(), indent=4))
+    time.sleep(5)
 
     # run container at a certain moment
     tz = timezone(timedelta(hours=2))
     scheduled_time = (datetime.datetime.now(tz) + timedelta(minutes=1)).isoformat()
-    print(scheduled_time)
     command = 'sh -c "date > /data/time.txt"'
     print(
-        run("echo-test", max_duration=1, scheduled_time=scheduled_time, command=command)
+        run(
+            "echo-test",
+            max_duration=1,
+            scheduled_time=scheduled_time,
+            command="/bin/sh",
+            args=[
+                "-c",
+                "echo 'if knowledge can create problems, it is not through ignorance that we can solve them' > /data/time.txt",
+            ],
+        )
     )
 
     print("\n=== DOWNLINK FILE ===")
     downlink("downlink.txt")
+    downlink("orbital.json")
     downlink("gpu-downlink.txt")
     downlink("time.txt")
 
     print("\n=== CLEANUP (DELETE FILES) ===")
     print(delete("/echo-test/Dockerfile"))
+    print(delete("orbital.json"))
     print(delete("downlink.txt"))
     print(delete("time.txt"))
     print(delete("gpu-downlink.txt"))
-    print(delete("/echo-test/echo-test.sh"))
+    print(delete("/echo-test"))
 
 
 def example_pod_volumes():
@@ -476,10 +477,9 @@ def example_pod_volumes():
         run(
             "python:3.11-alpine",
             pod_name="pod-a",
-            max_duration=30,
-            namespace=True,
-            ports=[80],
-            command="echo 'Is this the final frontier?' > /data/hello-space.txt",
+            max_duration=1,
+            command="/bin/sh",
+            args=["-c", "echo 'Is this the final frontier?' > /data/hello-space.txt"],
         )
     )
     print(
@@ -490,27 +490,62 @@ def example_pod_volumes():
     print(
         uplink(
             [
-                "hello-world.txt",
+                "./simple-echo/hello-world.txt",
             ],
             pod_name="pod-a",
         )
     )
     print("\nRechecking the files, we can see that it has been correctly uploaded:")
     print(json.dumps(files_list(pod_name="pod-a"), indent=4))
+
     print(
         "\nIf we check our default private volume, we can see it does not contain the hello-world.txt file:"
     )
     print(json.dumps(files_list(), indent=4))
+
     print(
         "\nIf we try to delete hello-world.txt without specifying the pod name, it will fail as it assumes the default private volume:"
     )
     print(json.dumps(delete("hello-world.txt"), indent=4))
+
     print("\nSo we specify pod-a for it to succeed:")
     print(json.dumps(delete("hello-world.txt", pod_name="pod-a"), indent=4))
+
     print("\nSame goes for downlinking files:")
     print(json.dumps(downlink("hello-space.txt", pod_name="pod-a"), indent=4))
-    print("\nAnd we confirm by checking it's files:")
+
+    print("\nAnd we confirm by checking its files:")
     print(json.dumps(files_list(pod_name="pod-a"), indent=4))
+
+
+def example_fisheye_api():
+    print("\n=== FISHEYE API ===")
+    print("Lets clean previous runs first.")
+    print(delete("insight.json"))
+    print(delete("20251029.png"))
+    print(delete("20251031.png"))
+    print(delete("20251030.png"))
+    print(
+        "\nIn this example we will test how to fetch images from the fisheye api, do some processing and downlink insighful data."
+    )
+    print("\nFirst we uplink the necessary files to build the Docker image:")
+    print(uplink(["./fisheye-api/Dockerfile", "./fisheye-api/main.py"], "./fisheye"))
+
+    print("\nThen we build the Docker Image:")
+    print(image_build("fisheye/Dockerfile", "fisheye-analysis", "./fisheye"))
+
+    print("\nWe request the pod to run:")
+    print(run("fisheye-analysis", "FPGA", 30))
+
+    print("\nWe verify the pod status:")
+    time.sleep(5)
+    print(pod_status())
+    time.sleep(15)
+
+    print("\nAfter it finished we will downlink the results and the image:")
+    print(downlink("insights.json"))
+    time.sleep(1)
+    print(downlink("20251029.png"))
 
 
 def examples_errors():
@@ -531,7 +566,6 @@ def examples_errors():
             "echo12-test",
             node="GPU",
             max_duration=1,
-            command="echo 123 > /data/gpu-downlink.txt",
         )
     )
     print(json.dumps(pod_status(), indent=4))
@@ -540,7 +574,6 @@ def examples_errors():
             "echo-test",
             node="GPU",
             max_duration=1,
-            command="echo 123 > /data/gpu-downlink.txt",
             pod_name="Hey-there",
         )
     )
@@ -555,17 +588,19 @@ def example_args_and_envs():
         run(
             "echo-test",
             max_duration=1,
-            command="/bin/sh -c",
-            args=["echo testing args $DURATION $SIZE", " > /data/test.txt"],
+            command="/bin/sh",
+            args=["-c", "echo testing args $DURATION $SIZE > /data/argument-test.txt"],
             envs={"DURATION": 60, "SIZE": 1024},
         )
     )
-    print(downlink("test.txt"))
+    time.sleep(10)
+    print(downlink("argument-test.txt"))
     print(
         "\nHere we can see that the environment variables have been used within the arguments passed to the echo command:\n"
     )
     with open("downlink/test.txt", "r") as f:
         print(f.read())
+    print(delete("argument-test.txt"))
 
 
 # ============================================================
@@ -576,18 +611,11 @@ if __name__ == "__main__":
     # Try to authenticate
     if not get_token():
         exit(1)
-    print("\n=== CLEANUP (DELETE FILES) ===")
-    print(delete("/echo-test/Dockerfile"))
-    print(delete("downlink.txt"))
-    print(delete("time.txt"))
-    print(delete("gpu-downlink.txt"))
-    print(delete("/echo-test/echo-test.sh"))
-    exit(1)
-    exmaple_simple_operations()
-    exit(1)
-    example_pod_volumes()
+
     example_pod_intercommunication()
-    examples_errors()
+    example_fisheye_api()
     example_args_and_envs()
-    run("echo-test", node="FPGA", max_duration=30)
-    downlink("hello-world.txt")
+    example_pod_volumes()
+    example_simple_operations()
+    examples_errors()
+    exit(1)

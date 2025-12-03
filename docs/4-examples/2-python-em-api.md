@@ -1,4 +1,4 @@
-# Python Client Example
+# EM API Python Client Implementation
 
 The `em-api-interface.py` script exemplifies how to create a client wrapper for the EM API specifications. It can be found under the [`examples/em-api/`](https://github.com/DPhi-Space/public-documentation/tree/main/examples/em-api) folder, with all the necessary support files for running the examples.
 
@@ -12,7 +12,6 @@ This Python client provides a simple interface for interacting with the CG2 EM A
 - **File operations**: uplink, downlink, list, and delete files
 - **Docker image management**: build from Dockerfile, load from tarball, and list available images
 - **Pod execution**: run containers on FPGA, GPU, or MPU nodes with scheduling support
-- **Namespace management**: create namespaces for inter-pod communication
 - **Storage model support**: full integration with pod-name-to-volume mapping
 
 ## Getting Started
@@ -87,12 +86,19 @@ run("echo-test", max_duration=1)
 
 # Run on GPU with custom command
 run("echo-test", node="GPU", max_duration=1,
-    command="echo 123 > /data/gpu-downlink.txt")
+    command="/bin/sh",
+    args=[
+        "-c",
+        "echo 'if knowledge can create problems, it is not through ignorance that we can solve them' > /data/gpu-downlink.txt"])
 
 # Schedule for future execution
 scheduled_time = (datetime.now(tz) + timedelta(minutes=1)).isoformat()
 run("echo-test", max_duration=1, scheduled_time=scheduled_time,
-    command='sh -c "date > /data/time.txt"')
+    command="/bin/sh",
+    args=[
+        "-c",
+        "echo 'if knowledge can create problems, it is not through ignorance that we can solve them' > /data/time.txt"
+    ])
 ```
 
 ### 2. Pod Volumes (`example_pod_volumes`)
@@ -120,8 +126,12 @@ This example demonstrates the pod-name-to-volume storage model:
 
 ```python
 # Create pod with dedicated volume
-run("python:3.11-alpine", pod_name="pod-a", max_duration=30,
-    command="echo 'Is this the final frontier?' > /data/hello-space.txt")
+run("python:3.11-alpine",
+    pod_name="pod-a",
+    max_duration=1,
+    command="/bin/sh",
+    args=["-c", "echo 'Is this the final frontier?' > /data/hello-space.txt"],
+)
 
 # Upload to pod-a's volume specifically
 uplink(["hello-world.txt"], pod_name="pod-a")
@@ -139,11 +149,10 @@ delete("hello-world.txt")  # Fails - looks in default volume
 
 ### 3. Inter-Pod Communication (`example_pod_intercommunication`)
 
-This example demonstrates how to make pods communicate within a private namespace:
+This example demonstrates how to make pods communicate among eachother:
 
 **What it does:**
 
-- Creates a private namespace for the user
 - Starts a server pod that exposes port 80
 - Starts a client pod that fetches data from the server
 - Shows how pods reference each other using `<username>-<pod_name>:<port>`
@@ -151,7 +160,6 @@ This example demonstrates how to make pods communicate within a private namespac
 
 **Key concepts:**
 
-- Namespace creation for pod networking
 - Port exposure with the `ports` parameter
 - Inter-pod communication using pod naming convention
 - Running multiple pods that interact with each other
@@ -160,18 +168,24 @@ This example demonstrates how to make pods communicate within a private namespac
 **Code snippet:**
 
 ```python
-# Create namespace first
-namespace_create()
 
 # Start server pod with exposed port
-run("python:3.11-alpine", pod_name="server", max_duration=2,
-    namespace=True, ports=[80],
-    command="python -m http.server 80")
+run(
+    "python:3.11-alpine",
+    pod_name="server",
+    max_duration=2,
+    ports=[80],
+    command="python -m http.server 80",
+)
 
 # Client pod fetches from server (client1-server:80)
-run("python:3.11-alpine", pod_name="client", max_duration=1,
-    namespace=True,
-    command="wget client1-server:80/ -O /data/server-data.txt")
+run(
+    "python:3.11-alpine",
+    pod_name="client",
+    max_duration=1,
+    command="/usr/bin/wget",
+    args=["server:80/", "-O", "/data/server-data.txt"],
+)
 
 # Check what the client downloaded
 files_list(pod_name="client")
@@ -180,9 +194,7 @@ downlink("server-data.txt", pod_name="client")
 
 **Important:** Both pods must:
 
-- Run with `namespace=True`
-- Be created after namespace creation
-- Use the naming convention `<username>-<pod_name>:<port>` for communication
+- Use the naming convention `<pod_name>:<port>` for communication
 
 ### 4. Environmental Variables and arguments (`example_env_and_args`)
 
@@ -241,9 +253,8 @@ The script provides the following helper functions:
 
 ### Pod Operations
 
-- `run(image, node="FPGA", max_duration=1, command="", scheduled_time=None, pod_name=None, ports=None, namespace=False)` - Execute pod
+- `run(image, node="FPGA", max_duration=1, command="", scheduled_time=None, pod_name=None, ports=None)` - Execute pod
 - `pod_status(pod_name="")` - Check pod status
-- `namespace_create()` - Create namespace for inter-pod communication
 
 ### HTTP Helpers
 
@@ -265,7 +276,7 @@ python em-api-interface.py
 Default configuration in the script:
 
 ```python
-BASE_URL = "http://localhost:8000/"
+BASE_URL = "http://{IP}:8000/"
 username = "client1"
 password = ""
 ```
@@ -276,12 +287,11 @@ Modify these variables to match your environment and credentials.
 
 1. **Always check pod status** after scheduling - successful scheduling doesn't guarantee successful deployment
 2. **Specify pod_name** when working with multiple volumes to avoid confusion
-3. **Create namespace before** using port exposure features
-4. **Use meaningful pod names** to keep track of different volumes
-5. **Clean up resources** by deleting unused files
-6. **Handle errors gracefully** - the API returns detailed error messages
+3. **Use meaningful pod names** to keep track of different volumes
+4. **Clean up resources** by deleting unused files
+5. **Handle errors gracefully** - the API returns detailed error messages
 
 ## Next Steps
 
-- Review the [API Specifications](/docs/4-em-api/02-api-specs.md) for detailed endpoint documentation
+- Review the [API Specifications](/docs/3-em-api/02-api-specs.md) for detailed endpoint documentation
 - Check the [Swagger documentation](https://editor.swagger.io/) with `em-api.json`
