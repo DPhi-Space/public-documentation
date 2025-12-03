@@ -1,14 +1,14 @@
 # Overview
 
-The **EM (Engineering Model) API** provides a controlled environment to test software payloads and interact with CG2 in a manner analogous to operations in orbit. This API allows developers and engineers to perform uplinks, downlinks, and manage Docker-based payloads on a ground-based test system that simulates key aspects of the onboard environment.
+The **Engineering Model(EM) API** provides a controlled environment to test software payloads and interact with CG2 in a manner analogous to operations in orbit. This API allows developers and engineers to perform uplinks, downlinks, and manage Docker-based payloads on a ground-based test system that simulates key aspects of the onboard environment.
 
 ## Purpose
 
 Testing and validating satellite software can be challenging due to limited access to the spacecraft. To address this, we provide the EM API to:
 
-- **Simulate space operations on the ground:** Run commands and deploy software payloads as if interacting with CG2 in orbit.
+- **Simulate Space operations on the ground:** Run commands and deploy software payloads as if interacting with CG2 in orbit.
 - **Upload and manage files:** Uplink files to the onboard file system, retrieve them, and inspect content for debugging.
-- **Execute Docker-based software payloads:** Build, load, and run software images in a controlled environment, reflecting the deployment process on CG2.
+- **Execute Docker-based software payloads:** Build, load, and run software in a controlled environment, reflecting the deployment process on CG2.
 - **Inspect and clean onboard directories:** List, download, and delete files safely, ensuring consistency with onboard file structures.
 
 ## Key Features
@@ -41,7 +41,7 @@ By interacting with the EM API, developers can:
 - Detect issues early in the ground test environment rather than in orbit.
 - Mimic end-to-end workflows of CG2 operations safely on Earth.
 
-## Docker Images, Containers, and DPhi Pods
+## Docker Images, Containers and DPhi Pods
 
 ### Docker Image
 
@@ -99,5 +99,3 @@ The user's dedicated volume is mounted at /data inside all DPhi Pod, allowing sh
 This API acts as a **ground-based simulation of CG2 space operations**, enabling a safe, repeatable, and realistic test environment for CG2 software payloads. It bridges the gap between development and in-orbit deployment, providing confidence that the software will behave correctly when operating onboard.
 
 ---
-
-Check out the [API Specifications](/docs/4-em-api/02-api-specs.md)

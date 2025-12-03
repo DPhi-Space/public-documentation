@@ -1,7 +1,5 @@
 # Specifications
 
-For a more detailed EM API description, checkout the swagger file `em-api.json` and open it with [swagger editor](https://editor.swagger.io/).
-
 ## Storage Model
 
 Each DPhi Pod name (`pod_name`) corresponds to a unique persistent private volume (PVC), on top of defining the name of the pod to be run. The rules are:
@@ -12,7 +10,7 @@ Each DPhi Pod name (`pod_name`) corresponds to a unique persistent private volum
 - All file operations (uplink, downlink, files_list, delete) and all pod runs use this same `pod_name`-to-volume mapping.
   - For example, running a pod with name pod `experiment-radiation` will use the `experiment-radiation` dedicated volume and mount it to the pod, under `/data`.
 
-Files stored under one `pod_name` are NOT visible from another `pod_name`.
+> :> [!WARNING] Files stored under one `pod_name` are NOT visible from another `pod_name`.
 
 ---
 
@@ -75,6 +73,7 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
   ```
 
 - `423 LOCKED` – If CG2 is busy
+- `500 INTERNAL ERROR` – Server side error.
 
 **Notes:**
 
@@ -94,7 +93,7 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
   - `pod_name`:
     - Type: `string`
     - Required: False
-    - Description: Specifies which persistent volume to list files from
+    - Description: Specifies which persistent volume to list files from. If none is provided, the default one is assumed
     - Example: `pod-a`
 
 **Response:**
@@ -160,7 +159,7 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
   - `pod_name`:
     - Type: `string`
     - Required: False
-    - Description: Specifies which persistent volume to downlink from.
+    - Description: Specifies which persistent volume to downlink from. If none is provided, the default one is assumed
     - Example: `pod-a`
 
 **Response:**
@@ -190,12 +189,12 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
   - `filepath`:
     - Type: `string`
     - Required: False
-    - Description: Relative path to the file or folder
+    - Description: Relative path to the file or folder.
     - Example: `./config/incorrect_config.yaml`
   - `pod_name`:
     - Type: `string`
     - Required: False
-    - Description: Specifies which persistent volume to delete from
+    - Description: Specifies which persistent volume to delete from. If none is provided, the default one is assumed.
     - Example: `pod-a`
 
 **Response:**
@@ -219,22 +218,22 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
   - `dockerfile`:
     - Type: `string`
     - Required: True
-    - Description: Path to Dockerfile relative to volume
+    - Description: Path to Dockerfile relative to volume.
     - Example: `test-exp-3/Dockerfile`
   - `context`:
     - Type: `string`
     - Required: True
-    - Description: Build context path
+    - Description: Build context path.
     - Example: `test-exp-3/`
   - `image`:
     - Type: `string`
     - Required: True
-    - Description: Desired Docker image name
+    - Description: Desired Docker image name.
     - Example: `experiment3-new-application`
   - `pod_name`:
     - Type: `string`
     - Required: False
-    - Description: Specifies which persistent volume to use for build context (optional)
+    - Description: Specifies which persistent volume to use for build context. If none is provided, the default one is assumed.
     - Example: `pod-a`
 
 **Behavior:**
@@ -297,7 +296,7 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
   - `tarfile`:
     - Type: `string`
     - Required: True
-    - Description: Path to tar file relative to volume
+    - Description: Path to tar file relative to volume.
     - Example: `images/experiment-2.tar`
   - `image`:
     - Type: `string`
@@ -307,7 +306,7 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
   - `pod_name`:
     - Type: `string`
     - Required: False
-    - Description: Specifies which persistent volume contains the tarfile
+    - Description: Specifies which persistent volume contains the tarfile. If none is provided, the default one is assumed.
     - Example: `pod-a`
 
 **Response:**
@@ -347,33 +346,10 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
 
 ---
 
-## **8. Create Namespace**
-
-**Endpoint:** `POST /em/pod/namespace/create`  
-**Purpose:** Request a namespace creation for user owned inter-pod communication. Creates a namespace with the username as a prefix, enabling DPhi Pods of the given user to communicate with each other onboard. Pods must be requested to run inside the namespace by setting the namespace flag on the request.
-
-**Request:**
-
-- **Headers:** `Authorization: Bearer <token>`
-
-**Response:**
-
-- `200 OK` – Success: `{ "message": "Namespace created successfully" }`
-- `400 BAD REQUEST` – Namespace creation failed
-- `423 LOCKED` – If CG2 is busy
-- `500 INTERNAL ERROR` – Internal server error
-
-**Notes:**
-
-- Required before pods can expose ports and communicate with each other
-- All pods running with `namespace=true` will be placed in this private namespace
-
----
-
-## **9. Execute DPhi Pod**
+## **8. Execute DPhi Pod**
 
 **Endpoint:** `POST /em/pod/run`  
-**Purpose:** Run a container/pod with a specified Docker image.
+**Purpose:** Run a DPhi Pod with a specified Docker image.
 
 **Request:**
 
@@ -382,12 +358,12 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
   - `image` :
     - Type: `string`
     - Required: True
-    - Description: Docker image name
+    - Description: Docker image name.
     - Example: `python:3.11-alpine`
   - `max_duration`:
     - Type: `int`
     - Required: True
-    - Description: Maximum execution time in minutes
+    - Description: Maximum execution time in minutes.
     - Example: `30`
   - `node`:
     - Type: `string`
@@ -407,18 +383,13 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
   - `pod_name`:
     - Type: `string`
     - Required: False
-    - Description: Specifies which persistent volume to mount at /data.
+    - Description: Specifies which persistent volume to mount at /data. If none is provided, the default one is assumed.
     - Example: `experiment-radiation`
   - `ports`:
     - Type: `list[int]`
     - Required: False
-    - Description: List of ports to expose. It requires the namespace to be created beforehand.
+    - Description: List of ports to expose to other user-owned pods.
     - Example: `[80, 1999, 14]`
-  - `namespace`:
-    - Type: `bool`
-    - Required: False
-    - Description: Run pod in private namespace.
-    - Example: `True`
   - `envs`:
     - Type: `dict{'KEY1':VALUE, 'KEY2':VALUE}`
     - Required: False
@@ -439,17 +410,13 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
 
 **Notes:**
 
-- The DPhi Pod will be gracefully stopped by the system after the execution time goes over max_duration in minutes.
+- The DPhi Pod will be gracefully stopped by the system after the execution time goes over `max_duration` in minutes.
 - `scheduled_time` must be provided in ISO format with timezone, e.g. `2025-05-22T12:10:00+02:00`
 - Providing the `command` parameter will override the Docker image's default command. If none is provided, the default command embedded in the Docker image will be executed.
 - Each `pod_name` maps to a dedicated persistent volume:
   - Using an existing `pod_name` mounts its existing volume (files preserved)
-  - Using a new `pod_name` creates a new, empty volume
+  - Using a new `pod_name`, never used before, creates a new, empty volume
   - Omitting `pod_name` uses the user's default pod and its default volume
-- Port exposure requires:
-  - A namespace must be created first using the namespace creation endpoint
-  - The `namespace` parameter must be set to `true`
-  - Pods in the same namespace can communicate via `<username>-<`pod_name`>:<port>`
 
 ---
 
@@ -465,7 +432,7 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
   - `pod_name`:
     - Type: `string`
     - Required: False
-    - Description: Identifies which pod instance to query
+    - Description: Identifies which pod instance to query.
     - Example: `pod-a`
 
 **Response:**
@@ -511,8 +478,6 @@ Files stored under one `pod_name` are NOT visible from another `pod_name`.
 
 - All endpoints require **authenticated users**.
 - Error code `423 LOCKED` prevents concurrent requests.
-- All file operations and pod executions respect the `pod_name`-to-volume mapping described in the Storage Model section.
+- All file operations and DPhi Pod executions respect the `pod_name`-to-volume mapping described in the Storage Model section.
 
 ---
-
-Checkout an [Example](/docs/4-em-api/03-example.md) implementation.
