@@ -10,7 +10,7 @@ Each DPhi Pod name (`pod_name`) corresponds to a unique persistent private volum
 - All file operations (uplink, downlink, files_list, delete) and all pod runs use this same `pod_name`-to-volume mapping.
   - For example, running a pod with name pod `experiment-radiation` will use the `experiment-radiation` dedicated volume and mount it to the pod, under `/data`.
 
-> :> [!WARNING] Files stored under one `pod_name` are NOT visible from another `pod_name`.
+> :warning: Files stored under one `pod_name` are NOT visible from another `pod_name`.
 
 ---
 
