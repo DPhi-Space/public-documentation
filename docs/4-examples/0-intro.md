@@ -27,6 +27,7 @@ cd public-documentation
    A Python client that connects to the onboard telemetry API, fetches health, telemetry, and statistics data, and stores it locally in JSON format. It can run both **natively** or **inside Docker** and integrates directly with the onboard database and telemetry REST service.
 1. [**EM API Python Client Implementation**](/docs/4-examples/2-python-em-api.md)
    A simple EM API Client implementation in Python for interfacing with CG2's EM. It provides a simple interface for interacting with the EM, handling authentification, file operations, Docker image management and DPhi Pod execution.
-1. [** Fisheye Telemetry Analysis **](/docs/4-examples/3-fisheye.md)
+1. [**Fisheye Telemetry Analysis**](/docs/4-examples/3-fisheye-gpu.md)
+   This example is designed to fetch fisheye images from the onboard telemetry API, perform GPU-accelerated analysis using CUDA, and generate detailed insights including deep features, color statistics, edge detection, texture, and histogram analysis.
 
 ---

@@ -143,4 +143,4 @@ Average throughput: 7.64 Mpx/s
 
 Now we can decide on which image we want to downlink. Lets say we are interested in images that have the Earth in frame. We would therefore consider images with more brightness, such as images `20251031.png` and `20230608.png`. This insight saves our downlink budget from unnecessary megabytes of useless data. The latter image can be seen below:
 
-!()[20230608.png]
+![](20230608.png)
