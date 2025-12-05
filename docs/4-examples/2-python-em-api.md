@@ -1,8 +1,8 @@
 # EM API Python Client Implementation
 
-The `em-api-interface.py` script exemplifies how to create a client wrapper for the EM API specifications. It can be found under the [`examples/em-api/`](https://github.com/DPhi-Space/public-documentation/tree/main/examples/em-api) folder, with all the necessary support files for running the examples.
-
 ## Overview
+
+The `em-api-interface.py` script exemplifies how to create a client wrapper for the EM API specifications. It can be found under the [`examples/em-api/`](https://github.com/DPhi-Space/public-documentation/tree/main/examples/em-api) folder, with all the necessary support files for running the examples.
 
 This Python client provides a simple interface for interacting with the CG2 EM API. It handles authentication, file operations, Docker image management, and DPhi Pod execution through a set of helper functions that abstract the underlying REST API calls.
 
@@ -14,24 +14,11 @@ This Python client provides a simple interface for interacting with the CG2 EM A
 - **Pod execution**: run containers on FPGA, GPU, or MPU nodes with scheduling support
 - **Storage model support**: full integration with pod-name-to-volume mapping
 
-## Getting Started
-
-### Prerequisites
+## Prerequisites
 
 - Python 3.x
 - `requests` library (`pip install requests`)
-- Access credentials (username and password)
-
-### Basic Setup
-
-```python
-import requests
-from em_api_interface import *
-
-# Authentication happens automatically on first API call
-# Or explicitly with:
-get_token()
-```
+- EM Access credentials (username and password)
 
 ## Understanding the Storage Model
 

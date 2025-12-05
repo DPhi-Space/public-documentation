@@ -23,7 +23,7 @@ If you’re unfamiliar with Dockerfiles, start here:
 
 The Docker images can be built either on the ground locally, or in space by Clustergate-2. Each case is explained below.
 
---- 
+---
 
 ## In-Space Builds
 
@@ -80,7 +80,8 @@ When the objective is to upload a new Docker image from scratch through a tar fi
 This produces small, efficient containers that are easier to upload, load and run in orbit.
 
 #### Example: Rust cross-compilation for ARM64
-Check out the example files in `examples/multi-stage-build`. Below is an example of a multi-stage build Dockerfile for a Rust application. 
+
+Check out the example files in `examples/multi-stage-build`. Below is an example of a multi-stage build Dockerfile for a Rust application.
 
 ```bash
 FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
@@ -114,7 +115,7 @@ docker buildx build --platform linux/arm64 -t dphi-example .
 docker save dphi-example > dphi-example.tar
 ```
 
-This `.tar` file can then be uploaded to the satellite, through the Dashboard. The system will load it to the Docker images on board by running: 
+This `.tar` file can then be uploaded to the satellite, through the Dashboard. The system will load it to the Docker images on board by running:
 
 ```bash
 docker load < dphi-example.tar
