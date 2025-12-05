@@ -439,7 +439,6 @@ def example_simple_operations():
     # run container at a certain moment
     tz = timezone(timedelta(hours=2))
     scheduled_time = (datetime.datetime.now(tz) + timedelta(minutes=1)).isoformat()
-    command = 'sh -c "date > /data/time.txt"'
     print(
         run(
             "echo-test",
@@ -448,16 +447,20 @@ def example_simple_operations():
             command="/bin/sh",
             args=[
                 "-c",
-                "echo 'if knowledge can create problems, it is not through ignorance that we can solve them' > /data/time.txt",
+                "date > /data/time.txt",
             ],
         )
     )
+
+    time.sleep(1)
 
     print("\n=== DOWNLINK FILE ===")
     downlink("downlink.txt")
     downlink("orbital.json")
     downlink("gpu-downlink.txt")
     downlink("time.txt")
+
+    time.sleep(1)
 
     print("\n=== CLEANUP (DELETE FILES) ===")
     print(delete("/echo-test/Dockerfile"))
@@ -471,7 +474,7 @@ def example_simple_operations():
 def example_pod_volumes():
     print("\n=== PODS WITH SPECIFIC NAMES ===")
     print(
-        "Lets run a pod with a specified name, pod-a, which will create a new empty private volume for it:"
+        "Lets run a pod with a specified name, pod-a, which will create a new empty private volume for it. The pod creates a file inside it."
     )
     print(
         run(
@@ -529,7 +532,7 @@ def example_fisheye_api():
         "\nIn this example we will test how to fetch images from the fisheye api, do some processing and downlink insighful data."
     )
     print("\nFirst we uplink the necessary files to build the Docker image:")
-    print(uplink(["./fisheye-api/Dockerfile", "./fisheye-api/main.py"], "./fisheye"))
+    print(uplink(["./fisheye-api/Dockerfile", "./fisheye-api/main.py"]))
 
     print("\nThen we build the Docker Image:")
     print(image_build("fisheye/Dockerfile", "fisheye-analysis", "./fisheye"))
@@ -542,10 +545,8 @@ def example_fisheye_api():
     print(pod_status())
     time.sleep(15)
 
-    print("\nAfter it finished we will downlink the results and the image:")
+    print("\nAfter it finished we will downlink the results:")
     print(downlink("insights.json"))
-    time.sleep(1)
-    print(downlink("20251029.png"))
 
 
 def examples_errors():
@@ -598,7 +599,7 @@ def example_args_and_envs():
     print(
         "\nHere we can see that the environment variables have been used within the arguments passed to the echo command:\n"
     )
-    with open("downlink/test.txt", "r") as f:
+    with open("downlink/argument-test.txt", "r") as f:
         print(f.read())
     print(delete("argument-test.txt"))
 
@@ -612,10 +613,10 @@ if __name__ == "__main__":
     if not get_token():
         exit(1)
 
-    example_pod_intercommunication()
-    example_fisheye_api()
-    example_args_and_envs()
-    example_pod_volumes()
     example_simple_operations()
-    examples_errors()
+    # example_pod_intercommunication()
+    # example_fisheye_api()
+    # example_args_and_envs()
+    # example_pod_volumes()
+    # examples_errors()
     exit(1)
