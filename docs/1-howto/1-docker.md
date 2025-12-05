@@ -23,7 +23,7 @@ If you’re unfamiliar with Dockerfiles, start here:
 
 The Docker images can be built either on the ground locally, or in space by Clustergate-2. Each case is explained below.
 
---- 
+---
 
 ## In-Space Builds
 
@@ -57,7 +57,6 @@ private-volume/
 └── my-app
 ```
 
-
 Both the `Dockerfile` and the `my-app` binary must be uploaded to the Dashboard and selected for uplink to Clustergate-2. After the files are uplinked, the Docker image build can be requested through the Dashboard by providing necessary details such as the image name, build context, and Dockerfile location. Once the build completes successfully, the Docker image can be run onboard as a container.
 
 ---
@@ -76,7 +75,8 @@ When the objective is to upload a new Docker image from scratch through a tar fi
 This produces small, efficient containers that are easier to upload, load and run in orbit.
 
 #### Example: Rust cross-compilation for ARM64
-Check out the example files in `examples/multi-stage-build`. Below is an example of a multi-stage build Dockerfile for a Rust application. 
+
+Check out the example files in `examples/multi-stage-build`. Below is an example of a multi-stage build Dockerfile for a Rust application.
 
 ```bash
 FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
@@ -110,7 +110,7 @@ docker buildx build --platform linux/arm64 -t dphi-example .
 docker save dphi-example > dphi-example.tar
 ```
 
-This `.tar` file can then be uploaded to the satellite, through the Dashboard. The system will load it to the Docker images on board by running: 
+This `.tar` file can then be uploaded to the satellite, through the Dashboard. The system will load it to the Docker images on board by running:
 
 ```bash
 docker load < dphi-example.tar
@@ -166,11 +166,11 @@ This approach is ideal for most applications—it produces **small, clean, and d
 
 The main design goals for your Docker container in orbit are:
 
-* **Minimize image size** to reduce upload time and storage use.
-* **Embed all required dependencies** during the image build.
-* **Avoid dynamic installation** of packages at runtime.
-* **Use only base images that are already available on the satellite**.
-* **Use static linking where possible** to simplify runtime requirements.
+- **Minimize image size** to reduce upload time and storage use.
+- **Embed all required dependencies** during the image build.
+- **Avoid dynamic installation** of packages at runtime.
+- **Use only base images that are already available on the satellite**.
+- **Use static linking where possible** to simplify runtime requirements.
 
 All files required for your container to function—**binary, input data, output data, and any necessary build files**—must be included in a **shared directory**. This ensures proper data exchange with the system, as there is no shell access inside the container during runtime.
 

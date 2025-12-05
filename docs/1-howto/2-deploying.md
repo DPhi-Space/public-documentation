@@ -23,6 +23,23 @@ Ground builds allow you to create fully packaged Docker images—often using mul
 
 Because Clustergate-2 operates in an air-gapped environment with no package manager access, all dependencies must be embedded at build time, and container size should be optimized for limited uplink capacity. Data input, output, and build files are handled via mounted volumes, as containers have no interactive shell access during runtime.
 
+## Logging
+
+Logging is critical in every field of software. This is especially true in space systems. It provides insight on what went wrong, how it went wrong and when it did. So always be mindfull of logging to the persistent volumes everything deemed important.
+
+> :warning: Remember that by default, everything that the DPhi Pods print to the console, be it standard output or errors, will not be saved by our system. It is the responsibility of the user to log to the mounted volume `/data` everything they wish to keep persistent accross runs and downlinkable.
+
+In Python for example, the `stdout` and `stderr` can be directly piped to a file in the persistent volume with the following:
+
+```python
+# Redirect stdout and stderr to log file
+log_file = open("/data/log.txt", "w")
+sys.stdout = log_file
+sys.stderr = log_file
+```
+
+Now, every error and every print will be piped to the `log.txt` file.
+
 ## Filesystem
 
 Each Docker container will have a dedicated volume mounted at `/data` by default.
