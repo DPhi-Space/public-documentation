@@ -535,7 +535,7 @@ def example_fisheye_api():
     print(uplink(["./fisheye-api/Dockerfile", "./fisheye-api/main.py"]))
 
     print("\nThen we build the Docker Image:")
-    print(image_build("fisheye/Dockerfile", "fisheye-analysis", "./fisheye"))
+    print(image_build("Dockerfile", "fisheye-analysis", "."))
 
     print("\nWe request the pod to run:")
     print(run("fisheye-analysis", "FPGA", 30))
