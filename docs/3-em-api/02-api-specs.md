@@ -474,6 +474,44 @@ Each DPhi Pod name (`pod_name`) corresponds to a unique persistent private volum
 
 ---
 
+## **11. List Nodes Status**
+
+**Endpoint:** `GET /em/nodes/status`  
+**Purpose:** Retrieve a list of available nodes and their current status for running DPhi Pods. All nodes that return _True_ are capable of scheduling a DPhi Pod.
+
+**Request:**
+
+- **Headers:** `Authorization: Bearer <token>`
+
+**Response:**
+
+- `200 OK` – Success:
+
+```json
+{
+  "message": "Nodes retrieved successfully.",
+  "data": [
+    {
+      "name": "fpga",
+      "status": "True"
+    },
+    {
+      "name": "gpu",
+      "status": "True"
+    },
+    {
+      "name": "mpu1",
+      "status": "True"
+    }
+  ]
+}
+```
+
+- `423 LOCKED` – If CG2 is busy
+- `500 INTERNAL ERROR` – Internal Server Error
+
+---
+
 ## **Shared Behaviors**
 
 - All endpoints require **authenticated users**.

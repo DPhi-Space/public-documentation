@@ -285,6 +285,14 @@ def image_list():
     return response.json()
 
 
+def nodes_status():
+    """
+    List available nodes and their current status for running pods
+    """
+    response = authorized_get(BASE_URL + "em/nodes/status")
+    return response.json()
+
+
 def run(
     image,
     node="FPGA",
@@ -376,7 +384,7 @@ def example_pod_intercommunication():
             args=["server:80/", "-O", "/data/server-data.txt"],
         )
     )
-    time.sleep(5)
+    time.sleep(10)
     print("\nLets check the files it generated:")
     print(json.dumps(files_list(pod_name="client"), indent=4))
     time.sleep(5)
@@ -390,6 +398,9 @@ def example_pod_intercommunication():
 
 def example_simple_operations():
     print("\n========== SIMPLE OPERATIONS ==========")
+    print("\n=== LIST NODES STATUS ===")
+    print(json.dumps(nodes_status(), indent=4))
+
     print("\n=== FILE LIST ===")
     print(json.dumps(files_list(), indent=4))
 
