@@ -426,9 +426,25 @@ def example_simple_operations():
 
     print("\n=== RUN DOCKER IMAGE ===")
     print(run("echo-test", max_duration=1))
-    time.sleep(2)
+    time.sleep(5)
     print(json.dumps(pod_status(), indent=4))
-    time.sleep(30)
+    time.sleep(20)
+
+    print(
+        run(
+            "echo-test",
+            node="MPU",
+            max_duration=1,
+            command="/bin/sh",
+            args=[
+                "-c",
+                "echo 'Any planet is Earth to those that live on it.' > /data/mpu-downlink.txt",
+            ],
+        )
+    )
+    time.sleep(5)
+    print(json.dumps(pod_status(), indent=4))
+    time.sleep(20)
 
     print(
         run(
@@ -463,13 +479,18 @@ def example_simple_operations():
         )
     )
 
-    time.sleep(1)
+    time.sleep(60)
 
     print("\n=== DOWNLINK FILE ===")
-    downlink("downlink.txt")
-    downlink("orbital.json")
-    downlink("gpu-downlink.txt")
-    downlink("time.txt")
+    print(downlink("downlink.txt"))
+    time.sleep(1)
+    print(downlink("orbital.json"))
+    time.sleep(1)
+    print(downlink("mpu-downlink.txt"))
+    time.sleep(1)
+    print(downlink("gpu-downlink.txt"))
+    time.sleep(1)
+    print(downlink("time.txt"))
 
     time.sleep(1)
 
@@ -478,6 +499,7 @@ def example_simple_operations():
     print(delete("orbital.json"))
     print(delete("downlink.txt"))
     print(delete("time.txt"))
+    print(delete("mpu-downlink.txt"))
     print(delete("gpu-downlink.txt"))
     print(delete("/echo-test"))
 
