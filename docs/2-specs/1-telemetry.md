@@ -130,6 +130,37 @@ curl "$BASE_URL/api/telemetry/tle"
 
 Returns telemetry stats or latest TLE string.
 
+## Images workflow
+ 
+To get the Images the Fisheye camera took, one can gather a list of files :
+```bash
+curl "$BASE_URL/api/images/list"
+```
+ 
+An example of the returned JSON might look as follows :
+```json
+{"success":true,"data":["example3.png","example2.png","example1.png"],"error":null,"count":3}
+```
+ 
+With this, one can either:
+ 
+-  Get 1 single image, the result will be the image directly. One example to gather an image with curl would be :
+```bash
+curl -X POST -d '{"images": ["example3.png"]}' -H "Content-Type: application/json" http://satellite-telemetry.dphi-tm/api/images --output example3.png
+```
+ 
+- Get multiple images zipped together :
+```bash
+curl -X POST -d '{"images": ["example3.png","example2.png"]}' -H "Content-Type: application/json" http://satellite-telemetry.dphi-tm/api/images --output example.zip
+```
+ 
+- Finally get the whole set of images with a limit (Highly discouraged to go over 100 images as processing might take too long and timeout) :
+```bash
+curl -X POST -d '{"limit": 100}' -H "Content-Type: application/json" http://satellite-telemetry.dphi-tm/api/images --output example.zip
+```
+ 
+The zipped files are in fact not compressed, it uses the `STORED` algorithm, so it's more a convenient way to get multiple images at once.
+
 ## Error Handling
 
 Errors are returned with `success: false`, and informative messages in the `error` field:
