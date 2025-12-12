@@ -75,17 +75,7 @@ const config = {
       },
       footer: {
         style: 'dark',
-        links: [
-          {
-            title: 'Docs',
-            items: [
-              {
-                label: 'Tutorial',
-                to: '/intro',
-              },
-            ],
-          },
-        ],
+        links: [],
         copyright: `Copyright © ${new Date().getFullYear()} DPhi Space. Built with Docusaurus.`,
       },
       prism: {

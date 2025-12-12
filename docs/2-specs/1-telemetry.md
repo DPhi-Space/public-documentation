@@ -16,15 +16,17 @@ It will be referred to as `BASE_URL` in the rest of the documentation.
 
 ### Base Endpoints
 
-| Endpoint                | HTTP Verb | Purpose                  |
-| ----------------------- | --------- | ------------------------ | ------ |
-| `/health`               | GET       | API health/              | status |
-| `/api/telemetry`        | GET       | Query telemetry records  |
-| `/api/telemetry/power`  | GET       | Query power telemetry    | only   |
-| `/api/telemetry/latest` | GET       | Latest telemetry per     | type   |
-| `/api/telemetry/types`  | GET       | List available telemetry | types  |
-| `/api/telemetry/stats`  | GET       | Returns telemetry stats  |
-| `/api/telemetry/tle`    | GET       | Latest TLE record        |
+| Endpoint                | HTTP Verb | Purpose                       |         |
+| ----------------------- | --------- | ------------------------      | ------  |
+| `/health`               | GET       | API health/                   | status  |
+| `/api/telemetry`        | GET       | Query telemetry records       |         |
+| `/api/telemetry/power`  | GET       | Query power telemetry only    |         |
+| `/api/telemetry/latest` | GET       | Latest telemetry per type     |         |
+| `/api/telemetry/types`  | GET       | List available telemetry types|         |
+| `/api/telemetry/stats`  | GET       | Returns telemetry stats types |         |
+| `/api/telemetry/tle`    | GET       | Latest TLE record             |         |
+| `/api/images/list`      | GET       | Returns images list           |         |
+| `/api/images`           | POST      | Ask for images                |         |
 
 ## Request Parameters
 
