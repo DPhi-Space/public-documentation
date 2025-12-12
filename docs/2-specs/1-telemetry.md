@@ -72,7 +72,7 @@ Responses contain telemetry data structured per the following models:
 - `Temperature`: up to 8 sensor readings
 - `Tle`: satellite Two-Line Element set as a String
 - `TelemetryRecord`: database row including UUID, timestamp, datatype, and serialized data
-- `FileList`: In cae of using the api images list, only a list of strings to describe the allowed images to download
+- `FileList`: In case of using the api images list, only a list of strings to describe the allowed images to download
 
 Full JSON example of a TelemetryData (can be retrieved with `/api/telemetry/latest` for example).
 Here some data is repeated, this is still partially work-in-progress, but in the datatype `complete` the wole set of available data is here.
@@ -158,7 +158,12 @@ curl "$BASE_URL/api/images/list"
 
 An example of the returned JSON might look as follows :
 ```json
-{"success":true,"data":["20230606.png","20230607.png","20230608.png", "20251031.png"],"error":null,"count":4}
+{
+  "success":true,
+  "data":["20230606.png","20230607.png","20230608.png", "20251031.png"],
+  "error":null,
+  "count":4
+}
 ```
 
 For now the images have only dates as names, but the goal is that the Fisheye images will have their names as full timestamp afterwards.
@@ -173,6 +178,7 @@ The `/api/images` POST request can accept this JSON structured data :
 - In case 1 image is selected it will be sent raw in PNG directly via HTTP and `Content-Type: image/png`.
 - In case there is a selection of images, all thos images will be zipped together (without compression) and sent back via HTTP and `Content-Type: application/zip`.
 - In case no images are specified, create a Zip with all images and sent it back as previously explained via Zip.
+
 `limit` is used to :
 - truncate the answers if needed when asked multiple images
 - limit the images that are zipped together in the case all images are being zipped (no `images` in request).
