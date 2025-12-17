@@ -169,6 +169,14 @@ def files_list(pod_name=""):
     return response.json()
 
 
+def pvc_list():
+    """ """
+    response = authorized_get(
+        BASE_URL + "/em/pvc/list",
+    )
+    return response.json()
+
+
 def downlink(filepath, downlink_folder="downlink/", pod_name=""):
     """
     Downlink a file from the volume associated with `pod_name`.
@@ -230,6 +238,19 @@ def delete(filepath, pod_name=""):
     response = authorized_post(
         BASE_URL + "em/files/delete",
         json={"filepath": filepath, "pod_name": pod_name},
+    )
+    return response.json()
+
+
+def pvc_delete(pvc):
+    """
+    Delete a user Private Volume Claim
+
+    pod_name: selects which persistent volume to modify. Uses the pod_name storage rules defined at the top of this file.
+    """
+    response = authorized_post(
+        BASE_URL + "em/pvc/delete",
+        json={"pvc": pvc},
     )
     return response.json()
 
@@ -646,7 +667,12 @@ if __name__ == "__main__":
     if not get_token():
         exit(1)
 
-    example_simple_operations()
+    print(pvc_list())
+    print(pvc_delete("pvc-testing"))
+    exit(1)
+    print(pod_status())
+    # print(files_list())
+    # example_simple_operations()
     # example_pod_intercommunication()
     # example_fisheye_api()
     # example_args_and_envs()
