@@ -20,7 +20,6 @@ It will be referred to as `BASE_URL` in the rest of the documentation.
 | ----------------------- | --------- | ------------------------      |
 | `/health`               | GET       | API health/status             |
 | `/api/telemetry`        | GET       | Query telemetry records       |
-| `/api/telemetry/power`  | GET       | Query power telemetry only    |
 | `/api/telemetry/latest` | GET       | Latest telemetry per type     |
 | `/api/telemetry/types`  | GET       | List available telemetry types|
 | `/api/telemetry/stats`  | GET       | Returns telemetry stats types |
