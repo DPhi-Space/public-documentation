@@ -1,4 +1,4 @@
-FROM fpga.dphi.space:5000/alpine
+FROM alpine
 
 WORKDIR /app
 COPY echo-test.sh .
