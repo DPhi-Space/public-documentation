@@ -94,8 +94,6 @@ To be sure your workload will run on the FM, please assure you had a testing in 
 | l4t-ml                                                      | latest                                                      |
 | l4t-pytorch-r36-2-0                                         | latest                                                      |
 | l4t-pytorch-r36-4-0                                         | latest                                                      |
-| liquid-1p6-22dec                                            | latest                                                      |
-| liquid-3b-22dec                                             | latest                                                      |
 | mariadb                                                     | 10.11                                                       |
 | mariadb                                                     | 10.6                                                        |
 | mariadb                                                     | 11                                                          |
@@ -151,8 +149,6 @@ To be sure your workload will run on the FM, please assure you had a testing in 
 | redis                                                       | 7-alpine                                                    |
 | redis                                                       | latest                                                      |
 | registry                                                    | 2                                                           |
-| registry.k8s.io/kube-scheduler                              | v1.32.3                                                     |
-| registry.k8s.io/sig-storage/nfs-subdir-external-provisioner | v4.0.2                                                      |
 | rocker/rstudio                                              | 4.3.2                                                       |
 | rockylinux                                                  | 8                                                           |
 | rockylinux                                                  | 9                                                           |
