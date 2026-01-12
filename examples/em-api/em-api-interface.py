@@ -32,7 +32,6 @@ import requests
 import time
 import datetime
 
-BASE_URL = ""
 TOKEN = None
 
 username = ""
@@ -80,6 +79,11 @@ def ensure_token():
 # ============================================================
 
 
+def _clean_dict(d):
+    """Remove keys with value None."""
+    return {k: v for k, v in d.items() if v is not None}
+
+
 def authorized_get(url, **kwargs):
     """
     Wrapper for GET requests with Authorization header and auto-refresh logic.
@@ -87,6 +91,11 @@ def authorized_get(url, **kwargs):
     ensure_token()
     headers = kwargs.pop("headers", {})
     headers["Authorization"] = f"Bearer {TOKEN}"
+    params = kwargs.pop("params", None)
+    if params:
+        params = {k: v for k, v in params.items() if v is not None}
+        if params:
+            kwargs["params"] = params
 
     response = requests.get(url, headers=headers, **kwargs)
 
@@ -108,6 +117,14 @@ def authorized_post(url, **kwargs):
     headers = kwargs.pop("headers", {})
     headers["Authorization"] = f"Bearer {TOKEN}"
 
+    for key in ("json", "data"):
+        if key in kwargs and kwargs[key] is not None:
+            cleaned = _clean_dict(kwargs[key])
+            if cleaned:
+                kwargs[key] = cleaned
+            else:
+                kwargs.pop(key)
+
     response = requests.post(url, headers=headers, **kwargs)
 
     # Retry if token expired
@@ -125,13 +142,13 @@ def authorized_post(url, **kwargs):
 # ============================================================
 
 
-def uplink(filepaths, dest_path="", pod_name=""):
+def uplink(filepaths, dest_path=None, pvc_name=None):
     """
     Upload files to the volume associated with `pod_name`.
 
     filepaths: list of local paths to upload
     dest_path (optional): remote destination folder
-    pod_name (optional): selects which persistent volume the files are uploaded to. Uses the pod_name storage rules defined at the top of this file.
+    pvc_name (optional): selects which persistent volume the files are uploaded to. Uses the pod_name storage rules defined at the top of this file.
     """
     ensure_token()
     headers = {"Authorization": f"Bearer {TOKEN}"}
@@ -142,11 +159,15 @@ def uplink(filepaths, dest_path="", pod_name=""):
         filename = os.path.basename(filepath)
         files_to_upload.append(("files", (filename, open(filepath, "rb"))))
 
+    payload = {"dest_path": dest_path, "pvc_name": pvc_name}
+    payload = {k: v for k, v in payload.items() if v is not None}
+
+    print(payload)
     response = requests.post(
         BASE_URL + "em/files/uplink",
         headers=headers,
         files=files_to_upload,
-        data={"dest_path": dest_path, "pod_name": pod_name},
+        data=payload,
     )
 
     # Clean up file handles
@@ -156,44 +177,45 @@ def uplink(filepaths, dest_path="", pod_name=""):
     return response.json()
 
 
-def files_list(pod_name=""):
+def files_list(pvc_name=None):
     """
-    List files stored in the volume associated with `pod_name`.
+    List files stored in the volume associated with `pvc_name`.
 
-    pod_name (optional): selects which persistent volume to inspect. Uses the pod_name storage rules defined at the top of this file.
+    pvc_name (optional): selects which persistent volume to inspect. Uses the pvc_name storage rules defined at the top of this file.
     """
-    response = authorized_get(
-        BASE_URL + "/em/files/list",
-        params={"pod_name": pod_name} or {},
-    )
+
+    payload = {"pvc_name": pvc_name}
+    payload = {k: v for k, v in payload.items() if v is not None}
+    response = authorized_post(BASE_URL + "/em/files/list", data=payload)
     return response.json()
 
 
 def pvc_list():
-    """ """
-    response = authorized_get(
+    response = authorized_post(
         BASE_URL + "/em/pvc/list",
     )
     return response.json()
 
 
-def downlink(filepath, downlink_folder="downlink/", pod_name=""):
+def downlink(filepath, downlink_folder="downlink/", pvc_name=None):
     """
-    Downlink a file from the volume associated with `pod_name`.
+    Downlink a file from the volume associated with `pvc_name`.
 
     filepath: filepath on the user's private volume to downlink.
     downlink_folder (optional): local folder where to downlink the files requested.
-    pod_name (optional): selects which persistent volume to downlink from. Uses the pod_name storage rules defined at the top of this file.
+    pvc_name (optional): selects which persistent volume to downlink from. Uses the pvc_name storage rules defined at the top of this file.
     """
 
     ensure_token()
     headers = {"Authorization": f"Bearer {TOKEN}"}
 
+    payload = {"filepath": filepath, "pvc_name": pvc_name}
+    payload = {k: v for k, v in payload.items() if v is not None}
     # Streaming GET request
     with requests.get(
         BASE_URL + "/em/files/downlink",
         headers=headers,
-        params={"filepath": filepath, "pod_name": pod_name},
+        params=payload,
         stream=True,
     ) as response:
         if response.status_code != 200:
@@ -228,29 +250,31 @@ def downlink(filepath, downlink_folder="downlink/", pod_name=""):
         }
 
 
-def delete(filepath, pod_name=""):
+def delete(filepath, pvc_name=None):
     """
-    Delete a file or folder from the volume associated with `pod_name`.
+    Delete a file or folder from the volume associated with `pvc_name`.
 
     filepath: filepath on the user's private volume to delete onboard. Can be a folder or a file.
-    pod_name (optional): selects which persistent volume to modify. Uses the pod_name storage rules defined at the top of this file.
+    pvc_name (optional): selects which persistent volume to modify. Uses the pvc_name storage rules defined at the top of this file.
     """
+    payload = {"filepath": filepath, "pvc_name": pvc_name}
+    payload = {k: v for k, v in payload.items() if v is not None}
     response = authorized_post(
         BASE_URL + "em/files/delete",
-        json={"filepath": filepath, "pod_name": pod_name},
+        json=payload,
     )
     return response.json()
 
 
-def pvc_delete(pvc):
+def pvc_delete(pvc_name):
     """
     Delete a user Private Volume Claim
 
-    pod_name: selects which persistent volume to modify. Uses the pod_name storage rules defined at the top of this file.
+    pvc_name: selects which persistent volume to modify. Uses the pvc_name storage rules defined at the top of this file.
     """
     response = authorized_post(
         BASE_URL + "em/pvc/delete",
-        json={"pvc": pvc},
+        json={"pvc_name": pvc_name},
     )
     return response.json()
 
@@ -260,41 +284,46 @@ def pvc_delete(pvc):
 # ============================================================
 
 
-def image_build(dockerfile, image, context=".", pod_name=""):
+def image_build(dockerfile, image, context=".", pvc_name=None):
     """
-    build a docker image using files located in the user's volume. the dockerfile and build context must exist in the volume associated with `pod_name` (see storage model at top of file).
+    build a docker image using files located in the user's volume. the dockerfile and build context must exist in the volume associated with `pvc_name` (see storage model at top of file).
 
 
     dockerfile: dockerfile path onboard to build the docker image from
     image: docker image name to tag the resulting build
     context (optional): docker build context from where to fetch the application source files
-    pod_name (optional): selects which persistent volume to use. uses the pod_name storage rules defined at the top of this file.
+    pvc_name (optional): selects which persistent volume to use. uses the pvc_name storage rules defined at the top of this file.
     """
+    payload = {
+        "dockerfile": dockerfile,
+        "image": image,
+        "context": context,
+        "pvc_name": pvc_name,
+    }
+    payload = {k: v for k, v in payload.items() if v is not None}
     response = authorized_post(
         BASE_URL + "em/pod/image/build",
-        json={
-            "dockerfile": dockerfile,
-            "image": image,
-            "context": context,
-            "pod_name": pod_name,
-        },
+        json=payload,
     )
     return response.json()
 
 
-def image_load(tarfile, image, pod_name=""):
+def image_load(tarfile, image, pvc_name=None):
     """
-    Load a Docker image tarball located in the user's volume. The tarfile must exist in the volume associated with `pod_name` (see storage model at top of file).
+    Load a Docker image tarball located in the user's volume. The tarfile must exist in the volume associated with `pvc_name` (see storage model at top of file).
 
 
     tarfile: File path from where to load the tar file of the Docker image.
     image: Docker image name from the tarfile. This parameter must match the Docker image name used during the build before creating the tar file.
-    pod_name (optional): selects which persistent volume to use. Uses the pod_name storage rules defined at the top of this file.
+    pvc_name (optional): selects which persistent volume to use. Uses the pvc_name storage rules defined at the top of this file.
     """
-    response = authorized_post(
-        BASE_URL + "em/pod/image/load",
-        json={"tarfile": tarfile, "image": image, "pod_name": pod_name},
-    )
+    payload = {
+        "tarfile": tarfile,
+        "image": image,
+        "pvc_name": pvc_name,
+    }
+    payload = {k: v for k, v in payload.items() if v is not None}
+    response = authorized_post(BASE_URL + "em/pod/image/load", json=payload)
     return response.json()
 
 
@@ -302,7 +331,7 @@ def image_list():
     """
     List available Docker images on the EM for the user.
     """
-    response = authorized_get(BASE_URL + "em/pod/image/list")
+    response = authorized_post(BASE_URL + "em/pod/image/list")
     return response.json()
 
 
@@ -310,7 +339,7 @@ def nodes_status():
     """
     List available nodes and their current status for running pods
     """
-    response = authorized_get(BASE_URL + "em/nodes/status")
+    response = authorized_post(BASE_URL + "em/nodes/status")
     return response.json()
 
 
@@ -318,9 +347,10 @@ def run(
     image,
     node="FPGA",
     max_duration=1,
-    command="",
+    command=None,
     scheduled_time=None,
     pod_name=None,
+    pvc_name=None,
     ports=None,
     args=None,
     envs=None,
@@ -346,32 +376,39 @@ def run(
     args(optional): sets the arguments to be passed to the command. It must be passed as a list of arguments, e.g. ['--debug', '-f', 'output.dat'].
 
     """
+    payload = {
+        "image": image,
+        "node": node,
+        "max_duration": max_duration,
+        "command": command,
+        "scheduled_time": scheduled_time,
+        "pod_name": pod_name,
+        "pvc_name": pvc_name,
+        "ports": ports,
+        "args": args,
+        "envs": envs,
+    }
+
+    payload = {k: v for k, v in payload.items() if v is not None}
+
     response = authorized_post(
         BASE_URL + "em/pod/run",
-        json={
-            "image": image,
-            "node": node,
-            "max_duration": max_duration,
-            "command": command,
-            "scheduled_time": scheduled_time,
-            "pod_name": pod_name,
-            "ports": ports,
-            "args": args,
-            "envs": envs,
-        },
+        json=payload,
     )
     return response.json()
 
 
-def pod_status(pod_name=""):
+def pod_status(pod_name=None):
     """
     Retrieve the status of the DPhi Pod associated with `pod_name`.
 
     pod_name (optional): Identifies which pod instance to query. Note that storage volumes also follow the pod_name rules defined at the top.
     """
-    response = authorized_get(
-        BASE_URL + "em/pod/status", params={"pod_name": pod_name} or {}
-    )
+    payload = {"pod_name": pod_name}
+
+    payload = {k: v for k, v in payload.items() if v is not None}
+
+    response = authorized_post(BASE_URL + "em/pod/status", params=payload)
     return response.json()
 
 
@@ -447,9 +484,7 @@ def example_simple_operations():
 
     print("\n=== RUN DOCKER IMAGE ===")
     print(run("echo-test", max_duration=1))
-    time.sleep(5)
     print(json.dumps(pod_status(), indent=4))
-    time.sleep(20)
 
     print(
         run(
@@ -463,9 +498,7 @@ def example_simple_operations():
             ],
         )
     )
-    time.sleep(5)
     print(json.dumps(pod_status(), indent=4))
-    time.sleep(20)
 
     print(
         run(
@@ -479,10 +512,8 @@ def example_simple_operations():
             ],
         )
     )
-    time.sleep(5)
 
     print(json.dumps(pod_status(), indent=4))
-    time.sleep(5)
 
     # run container at a certain moment
     tz = timezone(timedelta(hours=2))
@@ -500,20 +531,14 @@ def example_simple_operations():
         )
     )
 
-    time.sleep(60)
 
     print("\n=== DOWNLINK FILE ===")
     print(downlink("downlink.txt"))
-    time.sleep(1)
     print(downlink("orbital.json"))
-    time.sleep(1)
     print(downlink("mpu-downlink.txt"))
-    time.sleep(1)
     print(downlink("gpu-downlink.txt"))
-    time.sleep(1)
     print(downlink("time.txt"))
 
-    time.sleep(1)
 
     print("\n=== CLEANUP (DELETE FILES) ===")
     print(delete("/echo-test/Dockerfile"))
@@ -542,18 +567,18 @@ def example_pod_volumes():
     print(
         "\nThen we will fetch the files from pod-a, which lives in a dedicated private persistent volume for it:"
     )
-    print(json.dumps(files_list(pod_name="pod-a"), indent=4))
+    print(json.dumps(files_list(pvc_name="pod-a"), indent=4))
     print("\nThen we uplink a file for this specific pod:")
     print(
         uplink(
             [
                 "./simple-echo/hello-world.txt",
             ],
-            pod_name="pod-a",
+            pvc_name="pod-a",
         )
     )
     print("\nRechecking the files, we can see that it has been correctly uploaded:")
-    print(json.dumps(files_list(pod_name="pod-a"), indent=4))
+    print(json.dumps(files_list(pvc_name="pod-a"), indent=4))
 
     print(
         "\nIf we check our default private volume, we can see it does not contain the hello-world.txt file:"
@@ -566,7 +591,7 @@ def example_pod_volumes():
     print(json.dumps(delete("hello-world.txt"), indent=4))
 
     print("\nSo we specify pod-a for it to succeed:")
-    print(json.dumps(delete("hello-world.txt", pod_name="pod-a"), indent=4))
+    print(json.dumps(delete("hello-world.txt", pvc_name="pod-a"), indent=4))
 
     print("\nSame goes for downlinking files:")
     print(json.dumps(downlink("hello-space.txt", pod_name="pod-a"), indent=4))
@@ -666,13 +691,11 @@ if __name__ == "__main__":
     # Try to authenticate
     if not get_token():
         exit(1)
-
     print(pvc_list())
-    print(pvc_delete("pvc-testing"))
-    exit(1)
-    print(pod_status())
-    # print(files_list())
     # example_simple_operations()
+    # print(pvc_list())
+    # print(pvc_delete("pvc-testing"))
+    # print(files_list())
     # example_pod_intercommunication()
     # example_fisheye_api()
     # example_args_and_envs()
