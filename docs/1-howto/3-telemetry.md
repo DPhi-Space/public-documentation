@@ -15,15 +15,6 @@ http://satellite-telemetry.dphi-tm
 
 It will be referred to as `BASE_URL` in the rest of the documentation.
 
-## Swagger UI
-
-For development purposes and to help on the overall understanding of the API, there's a version with an included swagger-ui route.
-If this is on any interest please reach us.
-This is only for test and dev purpose as this is not present in the Flight Model version of the API.
-
-To access it simply go to `$BASE_URL/swagger-ui`, examples and specifications are already done to easify adoption.
-There is also the OpenAPI json spec available [here](./tlm-api.json) with [Swagger documentation](https://editor.swagger.io/).
-
 ## Example Workflow for simple telemetry tasks
 
 1. Check API status
