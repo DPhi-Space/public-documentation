@@ -26,14 +26,20 @@ This is important when:
 
 import os
 from datetime import datetime, timezone, timedelta
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+from tqdm import tqdm
+import socket
 import base64
 import json
 import requests
 import time
 import datetime
 
+BASE_URL = "http://192.168.3.3/"
 TOKEN = None
 
+# Default credentials for testing
 username = ""
 password = ""
 
@@ -142,22 +148,46 @@ def authorized_post(url, **kwargs):
 # ============================================================
 
 
-def uplink(filepaths, dest_path=None, pvc_name=None):
-    """
-    Upload files to the volume associated with `pod_name`.
+class KeepAliveAdapter(HTTPAdapter):
+    def init_poolmanager(self, *args, **kwargs):
+        kwargs["socket_options"] = [
+            (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1),
+        ]
+        return super().init_poolmanager(*args, **kwargs)
 
-    filepaths: list of local paths to upload
-    dest_path (optional): remote destination folder
-    pvc_name (optional): selects which persistent volume the files are uploaded to. Uses the pod_name storage rules defined at the top of this file.
-    """
+
+from requests_toolbelt.multipart.encoder import MultipartEncoder, MultipartEncoderMonitor
+
+
+def uplink(filepaths, dest_path="", pod_name=""):
     ensure_token()
     headers = {"Authorization": f"Bearer {TOKEN}"}
 
-    # Prepare files for multipart upload
-    files_to_upload = []
+    fields = {
+        "dest_path": dest_path,
+        "pod_name": pod_name,
+    }
+
+    file_fields = []
     for filepath in filepaths:
         filename = os.path.basename(filepath)
-        files_to_upload.append(("files", (filename, open(filepath, "rb"))))
+        file_fields.append(("files", (filename, open(filepath, "rb"))))
+
+    encoder = MultipartEncoder(fields=file_fields + list(fields.items()))
+
+    progress = tqdm(total=encoder.len, unit="B", unit_scale=True, desc="Uploading")
+
+    def monitor_callback(monitor):
+        progress.update(monitor.bytes_read - progress.n)
+
+    monitor = MultipartEncoderMonitor(encoder, monitor_callback)
+    headers["Content-Type"] = monitor.content_type
+
+    print(
+        "\nStarting Upload. "
+        "After the upload, the backend will transfer the file to the EM. "
+        "This can take several minutes for large files and starts after the upload reaches 100%."
+    )
 
     payload = {"dest_path": dest_path, "pvc_name": pvc_name}
     payload = {k: v for k, v in payload.items() if v is not None}
@@ -166,13 +196,15 @@ def uplink(filepaths, dest_path=None, pvc_name=None):
     response = requests.post(
         BASE_URL + "em/files/uplink",
         headers=headers,
-        files=files_to_upload,
-        data=payload,
+        data=monitor,
+        timeout=(60, 7200),
     )
 
-    # Clean up file handles
-    for _, (_, file_obj) in files_to_upload:
-        file_obj.close()
+    progress.close()
+
+    if not response.ok:
+        raise RuntimeError(f"{response.status_code} {response.text[:2000]}")
+
 
     return response.json()
 
@@ -486,33 +518,6 @@ def example_simple_operations():
     print(run("echo-test", max_duration=1))
     print(json.dumps(pod_status(), indent=4))
 
-    print(
-        run(
-            "echo-test",
-            node="MPU",
-            max_duration=1,
-            command="/bin/sh",
-            args=[
-                "-c",
-                "echo 'Any planet is Earth to those that live on it.' > /data/mpu-downlink.txt",
-            ],
-        )
-    )
-    print(json.dumps(pod_status(), indent=4))
-
-    print(
-        run(
-            "echo-test",
-            node="GPU",
-            max_duration=1,
-            command="/bin/sh",
-            args=[
-                "-c",
-                "echo 'if knowledge can create problems, it is not through ignorance that we can solve them' > /data/gpu-downlink.txt",
-            ],
-        )
-    )
-
     print(json.dumps(pod_status(), indent=4))
 
     # run container at a certain moment
@@ -533,21 +538,15 @@ def example_simple_operations():
 
 
     print("\n=== DOWNLINK FILE ===")
-    print(downlink("downlink.txt"))
-    print(downlink("orbital.json"))
-    print(downlink("mpu-downlink.txt"))
-    print(downlink("gpu-downlink.txt"))
-    print(downlink("time.txt"))
-
+    downlink("downlink.txt")
+    downlink("time.txt")
 
     print("\n=== CLEANUP (DELETE FILES) ===")
     print(delete("/echo-test/Dockerfile"))
     print(delete("orbital.json"))
     print(delete("downlink.txt"))
     print(delete("time.txt"))
-    print(delete("mpu-downlink.txt"))
-    print(delete("gpu-downlink.txt"))
-    print(delete("/echo-test"))
+    print(delete("/echo-test/echo-test.sh"))
 
 
 def example_pod_volumes():
@@ -691,14 +690,8 @@ if __name__ == "__main__":
     # Try to authenticate
     if not get_token():
         exit(1)
-    print(pvc_list())
-    # example_simple_operations()
-    # print(pvc_list())
-    # print(pvc_delete("pvc-testing"))
-    # print(files_list())
-    # example_pod_intercommunication()
-    # example_fisheye_api()
-    # example_args_and_envs()
-    # example_pod_volumes()
-    # examples_errors()
-    exit(1)
+    exmaple_simple_operations()
+    example_pod_volumes()
+    example_pod_intercommunication()
+    examples_errors()
+    example_args_and_envs()
