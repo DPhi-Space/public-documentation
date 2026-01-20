@@ -8,5 +8,5 @@ This API provides a ground-based simulation of satellite operations, allowing de
 
 1. [Overview](/docs/3-em-api/01-overview.md)
 2. [API Specifications](/docs/3-em-api/02-api-specs.md)
-3. [Example](/docs/3-em-api/03-example.md)
-4. [FAQ](/docs/3-em-api/04-faq.md)
+3. [Example](/docs/4-examples/2-python-em-api.md)
+4. [FAQ](/docs/3-em-api/03-faq.md)
