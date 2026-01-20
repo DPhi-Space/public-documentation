@@ -16,12 +16,18 @@ By standardizing this directory structure, Clustergate-2 ensures reliable and pr
 
 ## Building Docker Images onboard
 
-For instructions on how to structure and upload such an image, see the guide: How to Build a Docker Image.
+For instructions on how to structure and upload such an image, see the guide [In-Space Builds](./1-docker.md).
 There are two main approaches to building Docker images for Clustergate-2: building onboard the satellite or building on the ground.
-Onboard builds require uplinking the Dockerfile along with all necessary binaries and dependencies while preserving the folder structure; these builds must start from one of the base images already available in space.
+Onboard builds require uplinking the Dockerfile along with all necessary binaries and dependencies while preserving the folder structure; these builds must start from one of the base images already available in space. It is important to keep in mind that the base image in the Dockerfile points to a valid image in the onboard Docker registry, *i.e.*
+```bash
+FROM fpga.dphi.space:5000/[BASE_IMAGE]:[TAG]
+```
+
+
 Ground builds allow you to create fully packaged Docker images—often using multi-stage builds and cross-compilation for ARM64—and upload them as `.tar` archives for direct loading on the satellite.
 
 Because Clustergate-2 operates in an air-gapped environment with no package manager access, all dependencies must be embedded at build time, and container size should be optimized for limited uplink capacity. Data input, output, and build files are handled via mounted volumes, as containers have no interactive shell access during runtime.
+
 
 ## Filesystem
 
