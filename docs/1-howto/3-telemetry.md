@@ -2,12 +2,12 @@
 
 ## Intro
 
-This can serve as base examples on how to retrieve telemetry from the satellite.
-More detailed specifications can be found [here](/docs/2-specs/1-telemetry.md).
+This page can serve as base examples on how to retrieve telemetry from the satellite.
+More detailed specifications of the API can be found [here](/docs/2-specs/1-telemetry.md).
 
 ### Base URL
 
-The base url for evey request is the following:
+The base url for every request is the following:
 
 ```bash
 http://satellite-telemetry.dphi-tm
@@ -36,12 +36,10 @@ Returns all supported telemetry types.
 3. Get telemetry records
 
 ```bash
-curl "$BASE_URL/api/telemetry?datatype=temperature&limit=5"
+curl "$BASE_URL/api/telemetry?datatype=attitude&limit=5"
 ```
 
-Returns latest 5 temperature records.
-
-Returns power telemetry records.
+Returns latest 5 attitude records.
 
 4. Fetch stats or latest TLE
 
@@ -52,10 +50,10 @@ curl "$BASE_URL/api/telemetry/tle"
 
 Returns telemetry stats or latest TLE string.
 
-Full example curl for telemetry data:
+5. Full example curl for telemetry data:
 
 ```bash
-curl "$BASE_URL/api/telemetry?starttime=2025-01-01T00:00:00Z&endtime=2025-01-02T00:00:00Z&datatype=temperature&limit=10"
+curl "$BASE_URL/api/telemetry?starttime=2025-01-01T00:00:00Z&endtime=2025-01-02T00:00:00Z&datatype=attitude&limit=10"
 ```
 
 ## Fisheye images workflow
