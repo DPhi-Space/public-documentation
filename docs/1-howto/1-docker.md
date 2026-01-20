@@ -33,7 +33,7 @@ The Dashboard allows for uploading and organizing all files needed for the conta
 
 Once onboard, the entire file set is placed in a private volume, which is then mounted into the container at runtime. This ensures your application has access to all the files it needs, in the locations your Dockerfile or entrypoint expects.
 
-When building an image onboard, the Dockerfile must start with one of the base images already preloaded on the satellite using the `FROM` directive. These are the only Docker images available in space by default. A list of available Docker images can be found in the [Docker Images Onboard](docs/2-specs/docker-imgs.md) section. Below is an example of Dockerfile that builds from a base image already onboard:
+When building an image onboard, the Dockerfile must start with one of the base images already preloaded on the satellite using the `FROM` directive. These are the only Docker images available in space by default. A list of available Docker images can be found in the [Docker Images Onboard](docs/2-specs/0-docker-imgs.md) section. Below is an example of Dockerfile that builds from a base image already onboard:
 
 ```bash
 # Use one of the preloaded base images
@@ -58,7 +58,7 @@ private-volume/
 ```
 
 
-> [!WARNING]
+> [**WARNING**]
 > Here the base Docker image use has the onboard registry appended to it. This is important for in-space builds as it tells Docker to fetch the image from the registry instead of trying to download from the internet, which will of course fail.
 
 

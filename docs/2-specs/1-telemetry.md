@@ -3,7 +3,7 @@
 ## API Overview
 
 The API provides telemetry access for satellite data, exposing endpoints to query historic and latest telemetry records, power stats, supported data types, and TLE information.
-All the data comes from the spacecraft telemetry, as well as teh fisheye images.
+All the data comes from the spacecraft telemetry, as well as the fisheye images.
 
 ### Base URL
 
