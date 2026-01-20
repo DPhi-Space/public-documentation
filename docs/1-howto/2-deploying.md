@@ -125,15 +125,14 @@ Some applications may require access to specialized onboard hardware. These reso
 
 #### FPGA (Programmable Logic)
 
-If your application needs access to the onboard FPGA (Xilinx UltraScale+), please contact the team as early as possible. You may need to provide:
+If your application needs access to the onboard FPGA (Xilinx UltraScale+), please contact the team as early as possible.
 
-- Custom kernel modules
+You will be provided a template project to use in Vivado to build a compatible bitstream that adheres to the interface we expect on our system. 
 
-- Bitstreams or hardware descriptors
+Interface to accelerators from user space containers will work through a combination of UIO and [u-dma-buf](https://github.com/ikwzm/udmabuf).
 
-- Information for feasibility assessment
+Get in touch for more detailed information.
 
-Due to the complexity of integrating FPGA-based workloads, early coordination is essential.
 
 #### GPU (Jetson Orin NX)
 

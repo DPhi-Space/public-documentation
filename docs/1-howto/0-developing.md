@@ -23,7 +23,7 @@ docker --version
 ### Step 2: Create a Simple Dockerfile
 
 Clustergate-2 has a list of loaded Docker images developers can use as a base for their own images.
-Check it out in the [Docker Best Practices in Space](/docs/2-specs/docker-imgs.md) section.
+Check it out in the [Docker Best Practices in Space](/docs/2-specs/0-docker-imgs.md) section.
 Below is an example of Dockerfile for a simple python application:
 
 ```Dockerfile

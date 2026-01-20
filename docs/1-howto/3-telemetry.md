@@ -2,7 +2,7 @@
 
 ## Intro
 
-This page can serve as base examples on how to retrieve telemetry from the satellite.
+This page can serve as base examples on how your flight application will be able to retrieve and make use of on-board telemetry from within the satellite. 
 More detailed specifications of the API can be found [here](/docs/2-specs/1-telemetry.md).
 
 ### Base URL
