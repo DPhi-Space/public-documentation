@@ -37,7 +37,7 @@ When building an image onboard, the Dockerfile must start with one of the base i
 
 ```bash
 # Use one of the preloaded base images
-FROM gcr.io/distroless/cc-debian12
+FROM fpga.dphi.space:5000/alpine:3.18
 
 # Copy the precompiled binary into the image
 COPY my-app /my-app
@@ -56,6 +56,11 @@ private-volume/
 ├── Dockerfile
 └── my-app
 ```
+
+
+> [!WARNING]
+> Here the base Docker image use has the onboard registry appended to it. This is important for in-space builds as it tells Docker to fetch the image from the registry instead of trying to download from the internet, which will of course fail.
+
 
 Both the `Dockerfile` and the `my-app` binary must be uploaded to the Dashboard and selected for uplink to Clustergate-2. After the files are uplinked, the Docker image build can be requested through the Dashboard by providing necessary details such as the image name, build context, and Dockerfile location. Once the build completes successfully, the Docker image can be run onboard as a container.
 
@@ -166,11 +171,12 @@ This approach is ideal for most applications—it produces **small, clean, and d
 
 The main design goals for your Docker container in orbit are:
 
-- **Minimize image size** to reduce upload time and storage use.
-- **Embed all required dependencies** during the image build.
-- **Avoid dynamic installation** of packages at runtime.
-- **Use only base images that are already available on the satellite**.
-- **Use static linking where possible** to simplify runtime requirements.
+* **Minimize image size** to reduce upload time and storage use.
+* **Embed all required dependencies** during the image build.
+* **Avoid dynamic installation** of packages at runtime.
+* **Use only base images that are already available on the satellite**.
+* **Use static linking where possible** to simplify runtime requirements.
+- **When building Docker images in space, always prepend the onboard registry's name, i.e. `fpga.dphi.space:5000/[BASE_IMAGE]`**
 
 All files required for your container to function—**binary, input data, output data, and any necessary build files**—must be included in a **shared directory**. This ensures proper data exchange with the system, as there is no shell access inside the container during runtime.
 

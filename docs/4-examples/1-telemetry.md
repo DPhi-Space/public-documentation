@@ -66,7 +66,7 @@ The provided `docker-compose.yml` defines three services:
 ```yaml
 services:
   postgres:
-    image: jsilveira1409/telemetry-db
+    image: dphispace/telemetry-db
     restart: always
     environment:
       POSTGRES_DB: satellite_telemetry
@@ -75,7 +75,7 @@ services:
       PGDATA: /postgres
 
   satellite-telemetry.dphi-tm:
-    image: jsilveira1409/telemetry-api
+    image: dphispace/telemetry-api
     depends_on:
       - postgres
     restart: always
