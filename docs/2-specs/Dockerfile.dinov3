@@ -1,0 +1,63 @@
+FROM dustynv/l4t-pytorch:r36.4.0
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_INDEX_URL=https://pypi.org/simple \
+    HF_HOME=/opt/hf \
+    HF_HUB_CACHE=/opt/hf/hub \
+    DINO_MODEL_DIR=/opt/models/dinov3
+
+WORKDIR /app
+
+
+RUN python3 -m pip install -U pip && \
+    python3 -m pip install -U \
+      "numpy<2" \
+      transformers \
+      huggingface_hub \
+      "huggingface_hub[cli]" \
+      safetensors \
+      pillow \
+      opencv-python-headless
+
+ARG HF_MODEL=facebook/dinov3-vitl16-pretrain-sat493m
+ARG HF_REVISION=main
+
+# Paste your token at build time using --build-arg HF_TOKEN=...
+ARG HF_TOKEN=
+
+RUN mkdir -p "$DINO_MODEL_DIR" && \
+    python3 - << 'PY'
+import os
+from huggingface_hub import snapshot_download
+
+model = os.environ["HF_MODEL"]
+rev = os.environ["HF_REVISION"]
+dst = os.environ["DINO_MODEL_DIR"]
+token = os.environ.get("HF_TOKEN") or None
+
+if not token:
+    raise SystemExit("HF_TOKEN is empty. Build with: --build-arg HF_TOKEN=hf_...")
+
+snapshot_download(
+    repo_id=model,
+    revision=rev,
+    local_dir=dst,
+    local_dir_use_symlinks=False,
+    token=token,
+)
+print("Saved model to:", dst)
+PY
+
+RUN TRANSFORMERS_OFFLINE=1 HF_HUB_OFFLINE=1 python3 - << 'PY'
+import os
+from transformers import AutoImageProcessor, AutoModel
+
+p = os.environ["DINO_MODEL_DIR"]
+AutoImageProcessor.from_pretrained(p, local_files_only=True)
+AutoModel.from_pretrained(p, local_files_only=True)
+print("Offline load OK from", p)
+PY
+
+CMD ["bash"]

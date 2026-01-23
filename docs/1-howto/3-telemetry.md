@@ -4,6 +4,7 @@
 
 This page can serve as base examples on how your flight application will be able to retrieve and make use of on-board telemetry from within the satellite. 
 More detailed specifications of the API can be found [here](/docs/2-specs/1-telemetry.md).
+You can also test this API on the Ground by looking at the [telemetry example](/docs/4-examples/1-telemetry.md) section.
 
 ### Base URL
 
@@ -40,6 +41,8 @@ curl "$BASE_URL/api/telemetry?datatype=attitude&limit=5"
 ```
 
 Returns latest 5 attitude records.
+
+WARNING: querying the endpoint without any parameter will cause the whole database to be returned, and therefore may timeout or fail if too many datapoints are present. We **discourage** relying on retrieving telemetry without constraining the query through time range parameters. 
 
 4. Fetch stats or latest TLE
 
