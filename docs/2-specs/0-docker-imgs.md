@@ -18,7 +18,6 @@ docker --platform=arm64 pull alpine:3
 ```
 
 Just be aware that those images were pulled a while ago, the latest tags for example are not from now, but from the time pulled.
-We will soon publish the associated sha256sum for each image so that this is more precise.
 To be sure your workload will run on the FM, please assure you had a testing in our Engineering Model first.
 The latest, alpine, slim tags were push as-is, you will find in `()` the version running.
 In the registry, the tag does not contain the `()` part.
