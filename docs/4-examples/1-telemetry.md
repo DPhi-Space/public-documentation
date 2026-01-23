@@ -32,6 +32,9 @@ The API base URL is shown below, as detailed in the [Telemetry API Section](/doc
 http://satellite-telemetry.dphi-tm
 ```
 
+NOTE: This URL works only if tou are running inside the docker compose file that will be shown here-after, or while running on the satellite cluster.
+If you want to use the API from outside the docker compose, please simply use `http://localhost:8000` as a base URL. 
+
 ## Setup
 
 Clone the public documentation repository to get the source code.
