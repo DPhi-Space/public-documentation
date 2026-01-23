@@ -41,6 +41,8 @@ curl "$BASE_URL/api/telemetry?datatype=attitude&limit=5"
 
 Returns latest 5 attitude records.
 
+WARNING: Please don't query the `/api/telemetry` endpoint without any parameters as you would receive all the data from the DB, this could lead to Denial Of Service.
+
 4. Fetch stats or latest TLE
 
 ```bash
