@@ -21,6 +21,8 @@ Just be aware that those images were pulled a while ago, the latest tags for exa
 To be sure your workload will run on the FM, please assure you had a testing in our Engineering Model first.
 The latest, alpine, slim tags were push as-is, you will find in `()` the version running.
 In the registry, the tag does not contain the `()` part.
+For example, if you want to use the image alpine on the latest(3.20) you will use `FROM fpga.dphi.space:5000/alpine:latest`.
+For your reference and internal testing, you can fix it to version 3.20 in case the latest tag has been otherwise moved.
 
 | Image Name                                                  | Tag                                                         |
 | ----------------------------------------------------------- | ----------------------------------------------------------- |
