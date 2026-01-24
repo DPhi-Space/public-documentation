@@ -57,7 +57,7 @@ For your reference and internal testing, you can fix it to version 3.20 in case 
 | dotnet-runtime                                              | 8.0                                                         |
 | dotnet-sdk                                                  | 7.0                                                         |
 | dotnet-sdk                                                  | 8.0                                                         |
-| dphi-embedded-ml-armv8-py311(**)                            | latest                                                      |
+| dphispace/dphi-embedded-ml-armv8-py311(**)                  | latest                                                      |
 | eclipse-temurin                                             | 11-jdk                                                      |
 | eclipse-temurin                                             | 17-jdk                                                      |
 | eclipse-temurin                                             | 17-jre                                                      |
@@ -163,6 +163,6 @@ For your reference and internal testing, you can fix it to version 3.20 in case 
 | ultralytics-latest-jetson-jetpack6                          | latest(8.3.241-jetson-jetpack6)                             |
 
 (*) dinov3 is a model developed by Meta (https://ai.meta.com/dinov3/). It encodes the image into embedding s just like LLMs do so for test, which can later be used for many tasks: segmentation, depth estimation, classification, change detection etc..
-We loaded the model dinov3-vitl16-pretrain-sat493m which a backbone thats pretrained on satellite imagery. It is therefore ideal for usage on CG2 and later missions with high resolution images. The dockerfile requires a hugging face token to pull the dinov3-vitl16-pretrain-sat493m which is removed from this [dockerfile](./Dockerfile.dinov3)
+We loaded the model dinov3-vitl16-pretrain-sat493m which a backbone thats pretrained on satellite imagery. It is therefore ideal for usage on CG2 and later missions with high resolution images. The dockerfile requires a hugging face token to pull the dinov3-vitl16-pretrain-sat493m which is removed from this [Dockerfile](./Dockerfile.dinov3)
 
-(**) dphi-embedded-ml is an image that has useful machine learning libraries that can run on a cpu (torch, tflite, onnx runtime). It is a lightweight alternative for images like dustynv-ml that can only run on the jetson. The image also includes useful libraries for orbital calculations (sgp4, pyorbital, pyproj). This is an ideal compromse to test AI in a CPU rather than on the GPU. Here is the [Dockerfile](./Dockerfile.dphi-embedded) we created.
+(**) dphi-embedded-ml is an image that has useful machine learning libraries that can run on a cpu (torch, tflite, onnx runtime). It is a lightweight alternative for images like dustynv-ml that can only run on the jetson. The image also includes useful libraries for orbital calculations (sgp4, pyorbital, pyproj). This is an ideal compromse to test AI in a CPU rather than on the GPU. You can pull it from dockerhub or you can find the Dockerfile used at: [Dockerfile](./Dockerfile.dphi-embedded).
