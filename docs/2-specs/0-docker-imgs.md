@@ -57,7 +57,7 @@ For your reference and internal testing, you can fix it to version 3.20 in case 
 | dotnet-runtime                                              | 8.0                                                         |
 | dotnet-sdk                                                  | 7.0                                                         |
 | dotnet-sdk                                                  | 8.0                                                         |
-| dphispace/dphi-embedded-ml-armv8-py311(**)                  | latest                                                      |
+| dphi-embedded-ml-armv8-py311(**)                  | latest                                                      |
 | eclipse-temurin                                             | 11-jdk                                                      |
 | eclipse-temurin                                             | 17-jdk                                                      |
 | eclipse-temurin                                             | 17-jre                                                      |
