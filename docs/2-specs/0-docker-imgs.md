@@ -88,7 +88,7 @@ For your reference and internal testing, you can fix it to version 3.20 in case 
 | httpd                                                       | latest(2.4.65)                                              |
 | influxdb                                                    | 1.8                                                         |
 | influxdb                                                    | 2.7                                                         |
-| l4t-ml                                                      | latest(r36.4.4)                                             |
+| l4t-ml                                                      | latest(r36.4.0)                                             |
 | l4t-pytorch-r36-2-0                                         | latest(r36.2.0)                                             |
 | l4t-pytorch-r36-4-0                                         | latest(r36.4.0)                                             |
 | mariadb                                                     | 10.11                                                       |
