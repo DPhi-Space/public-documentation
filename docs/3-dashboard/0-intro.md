@@ -10,3 +10,4 @@ Get started:
 1. [Namespaces](/docs/3-dashboard/1-namespaces.md)
 1. [Operations](/docs/3-dashboard/2-operations.md)
 1. [Executions](/docs/3-dashboard/3-executions.md)
+1. [Tasks](/docs/3-dashboard/4-tasks/0-intro.md)
