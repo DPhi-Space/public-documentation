@@ -1,14 +1,29 @@
-# Downlink Task
+# Downlink task
 
 **Task type:** `dphi.space.cg2.downlink`
 
 ## Purpose
-Downlink files from a specific volume and filepath onboard Clustergate 2 and store them in the namespace file area.
+Downlink files from a specific volume and file path onboard Clustergate-2 and store them in the namespace file area.
+
+## Definition
+
+```yaml
+  - id: [task name]
+    type: dphi.space.cg2.downlink
+    description: [description]
+    source:
+      - logs.txt
+      - example.yaml
+    destination: /first_test
+    volume: payload
+```
 
 ## Inputs
+- `id`: Name of the task.
+- `description`: Description of the task.
 - `source`: List of remote paths to downlink.
-- `volume`: Optional volume name to downlink the files from. Defaults to the main users volume, *i.e.* `[username]-pvc`.
 - `destination`: Namespace path where files should land after downlink is complete. Defaults to `/`.
+- `volume`: Optional volume name to downlink the files from. Defaults to the main user's volume, *i.e.* `[username]-pvc`.
 
 ## Outputs
 - `files`: List of files uploaded to the namespace paths.

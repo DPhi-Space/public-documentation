@@ -6,13 +6,15 @@ Operations are the blueprints for executions. At its core, an operation is defin
 
 Operations organize `tasks` and their respective `inputs`. They define what tasks run, how they run, and when they run.
 
-## Operation Example
-As an example, the following operation `test-health`:
+---
 
-```YAML
+## Operation example
+As an example, take the following operation `test-health`:
+
+```yaml
 id: test-health
 namespace: gamma
-description: Example execution with multiple CG2 tasks.
+description: Example execution with multiple Clustergate-2 tasks.
 tasks:
 - id: pod_run_job
   pod_name: test
@@ -38,15 +40,20 @@ tasks:
   volume: payload
 ```
 
-Defines an operation in which two tasks are performed sequentially. First, the `pod_run_job` task of type `dphi.space.cg2.pod.run` schedules a DPhi Pod to run with the given parameters. This task is expected to create the `hello-from-space.txt` file at the root of the `payload` volume onboard. Then, the `downlink_results` task of type [`dphi.space.cg2.downlink`](/docs/3-dashboard/4-tasks/cg2/downlink.md) will downlink this file and save it to the folder `/first_test` under the namespace of the operation, *i.e.* `gamma`.
+This example defines an operation in which two tasks are performed sequentially.
 
+First, the `pod_run_job` task of type [`dphi.space.cg2.pod.run`](/docs/3-dashboard/4-tasks/cg2/pod/run.md) schedules a DPhi Pod to run with the given parameters. This task is expected to create the `hello-from-space.txt` file at the root of the `payload` volume onboard.
+
+Then, the `downlink_results` task of type [`dphi.space.cg2.downlink`](/docs/3-dashboard/4-tasks/cg2/downlink.md) will downlink this file and save it to the folder `/first_test` under the namespace of the operation, *i.e.* `gamma`.
+
+For a full list of task types, see the [Tasks Overview](/docs/3-dashboard/4-tasks/0-intro.md).
+
+---
 
 ## Tasks
 
 Tasks are the atomic units of operations. They are associated with single actions, such as uplinking, executing a DPhi Pod, or deleting a file. They define what should be executed with all the necessary parameters.
 
 Tasks can also generate task-specific outputs. For example, the [`dphi.space.cg2.downlink`](/docs/3-dashboard/4-tasks/cg2/downlink.md) task type exposes downlinked file URIs and metadata.
-
-
 
 The list of available tasks can be found in the [Tasks](/docs/3-dashboard/4-tasks/0-intro.md) section.

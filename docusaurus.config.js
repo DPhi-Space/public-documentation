@@ -57,6 +57,8 @@ const config = {
         indexDocs: true,
         indexPages: true,
         docsRouteBasePath: '/',
+        searchBarShortcut: false,
+        searchBarShortcutHint: false,
       },
     ],
   ],
