@@ -1,4 +1,4 @@
-# Examples
+# Overview
 
 This section contains **application examples** demonstrating how to deploy and interact with software running on **Clustergate-2**.
 
