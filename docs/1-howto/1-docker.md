@@ -58,8 +58,9 @@ private-volume/
 ```
 
 
-> [**WARNING**]
-> Here the base Docker image use has the onboard registry appended to it. This is important for in-space builds as it tells Docker to fetch the image from the registry instead of trying to download from the internet, which will of course fail.
+:::warning
+Here the base Docker image use has the onboard registry appended to it. This is important for in-space builds as it tells Docker to fetch the image from the registry instead of trying to download from the internet, which will of course fail.
+:::
 
 
 Both the `Dockerfile` and the `my-app` binary must be uploaded to the Dashboard and selected for uplink to Clustergate-2. After the files are uplinked, the Docker image build can be requested through the Dashboard by providing necessary details such as the image name, build context, and Dockerfile location. Once the build completes successfully, the Docker image can be run onboard as a container.

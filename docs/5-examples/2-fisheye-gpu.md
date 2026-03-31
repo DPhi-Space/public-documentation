@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `fisheye.py` script exemplifies how compute intensive applications can be performed onboard CG2 by leveraging both fisheye telemetry and GPU availability. The `main.py` script exemplifies how this application example can be executed on CG2's EM using the [EM API](/docs/3-em-api/00-intro.md). The source code for this example can be found under [`examples/fisheye/`](https://github.com/DPhi-Space/public-documentation/tree/main/examples/fisheye), with all the necessary support files for running the example.
+The `fisheye.py` script exemplifies how compute intensive applications can be performed onboard CG2 by leveraging both fisheye telemetry and GPU availability. The `main.py` script exemplifies how this application example can be executed on CG2's EM using the [EM API](https://github.com/DPhi-Space/public-documentation/tree/main/docs/.archive/3-em-api/00-intro.md). The source code for this example can be found under [`examples/fisheye/`](https://github.com/DPhi-Space/public-documentation/tree/main/examples/fisheye), with all the necessary support files for running the example.
 
 This example is designed to fetch fisheye images from the onboard telemetry API, perform GPU-accelerated analysis using CUDA, and generate detailed insights including deep features, color statistics, edge detection, texture, and histogram analysis.
 
@@ -143,4 +143,4 @@ Average throughput: 7.64 Mpx/s
 
 Now we can decide on which image we want to downlink. Lets say we are interested in images that have the Earth in frame. We would therefore consider images with more brightness, such as images `20251031.png` and `20230608.png`. This insight saves our downlink budget from unnecessary megabytes of useless data. The latter image can be seen below:
 
-![](20230608.png)
+![](imgs/20230608.png)

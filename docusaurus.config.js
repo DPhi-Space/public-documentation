@@ -49,6 +49,19 @@ const config = {
       }),
     ],
   ],
+  themes: [
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        indexDocs: true,
+        indexPages: true,
+        docsRouteBasePath: '/',
+        searchBarShortcut: false,
+        searchBarShortcutHint: false,
+      },
+    ],
+  ],
 
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
@@ -70,6 +83,10 @@ const config = {
             sidebarId: 'tutorialSidebar',
             position: 'left',
             label: 'Documentation',
+          },
+          {
+            type: 'search',
+            position: 'right',
           },
         ],
       },
