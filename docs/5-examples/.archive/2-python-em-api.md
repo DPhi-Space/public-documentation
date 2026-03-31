@@ -280,5 +280,5 @@ Modify these variables to match your environment and credentials.
 
 ## Next Steps
 
-- Review the [API Specifications](/docs/3-em-api/02-api-specs.md) for detailed endpoint documentation
+- Review the [API Specifications](https://github.com/DPhi-Space/public-documentation/tree/main/docs/.archive/3-em-api/02-api-specs.md) for detailed endpoint documentation
 - Check the [Swagger documentation](https://editor.swagger.io/) with `em-api.json`
