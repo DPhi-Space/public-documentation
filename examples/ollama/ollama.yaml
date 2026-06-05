@@ -1,0 +1,71 @@
+labels:
+  name: Orbital data processing automation
+tasks:
+- id: uplink
+  type: dphi.space.cg2.uplink
+  source:
+  - vlms.py
+  - fisheye.jpg
+  destination: /
+  volume: ollama
+- id: tags
+  pod_name: test
+  type: dphi.space.cg2.pod.run
+  image:
+    name: alpine
+    tag: latest
+  command:
+  - wget
+  args:
+  - -O
+  - /data/tags.txt
+  - http://ollama-dphi.dphi-public/api/tags
+  node: Mpu
+  volume: ollama
+  max_duration: 5
+  on_failure: stop
+- id: gemma
+  pod_name: test
+  type: dphi.space.cg2.pod.run
+  image:
+    name: alpine
+    tag: latest
+  command:
+  - wget
+  args:
+  - -O
+  - /data/opinion.txt
+  - '--header=Content-Type: application/json'
+  - '--post-data={"model":"gemma3:4b","prompt":"How cool is it to be running on space, Gemma? .","stream":false}'
+  - http://ollama-dphi.dphi-public/api/generate
+  node: Mpu
+  volume: ollama
+  max_duration: 5
+  on_failure: stop
+- id: vlms
+  pod_name: test
+  type: dphi.space.cg2.pod.run
+  image:
+    name: python
+    tag: '3.10'
+  command:
+  - python3
+  args:
+  - /data/vlms.py
+  node: Mpu
+  volume: ollama
+  max_duration: 10
+  on_failure: stop
+- id: downlink_results
+  type: dphi.space.cg2.downlink
+  source:
+  - vlms.log
+  - tags.txt
+  - opinion.txt
+  - gemma3_4b.txt
+  - ministral-3_8b.txt
+  - llava_7b.txt
+  destination: ./downlink
+  volume: ollama
+  on_failure: stop
+description: Example execution with a minimal CG2 workflow.

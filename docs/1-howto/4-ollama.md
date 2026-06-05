@@ -1,13 +1,17 @@
 # Ollama Inference server
 
-There will be running an Ollama server running on the GPU of CG2 at all time.
-You can have access to the preloaded models via the API calls ollama defines on his documentation.
+[Ollama](https://ollama.com/) is available on the GPU node of Clustergate 2 as a persistent inference server.
+You can access the preloaded models through the standard Ollama API.
 
 ## Usage
 
-To use it you will need to simply make API calls to the `http://ollama-dphi.dphi-public` URL.
+To use it, send API requests to `http://ollama-dphi.dphi-public`.
 
-The Ollama endpoints available are : 
+:::warning
+API requests are tracked and chargeable. Ollama usage is considered a paid metric.
+:::
+
+The available Ollama endpoints are:
 
 - `POST` `/api/generate` [ollama doc](https://docs.ollama.com/api/generate)
 - `POST` `/api/chat` [ollama doc](https://docs.ollama.com/api/chat)
@@ -19,7 +23,7 @@ The Ollama endpoints available are :
 
 ## Models
 
-We have the following preloaded images (answer of the `/api/tags` endpoint) :
+The `/api/tags` endpoint returns the preloaded models available on the server:
 
 ```json
 {
@@ -114,3 +118,31 @@ We have the following preloaded images (answer of the `/api/tags` endpoint) :
   ]
 }
 ```
+
+## Example workflow
+
+The repository includes a complete example workflow in [`examples/ollama/ollama.yaml`](../../examples/ollama/ollama.yaml).
+This Operation YAML can be used to interact with Ollama onboard of Clustergate-2 and generate insights from a fisheye picture from multiple models. 
+
+The workflow does three things:
+
+- uploads the Python script and sample image into the working volume
+- calls the Ollama API from a container
+- downloads the generated outputs back to your local machine
+
+The `vlms.py` script is also included in [`examples/ollama/vlms.py`](../../examples/ollama/vlms.py).
+It reads `fisheye.jpg`, sends the image to Ollama for each configured model, and writes one report per model:
+
+- `gemma3_4b.txt`
+- `ministral-3_8b.txt`
+- `llava_7b.txt`
+
+It also writes a combined log file at `vlms.log`.
+
+You can run the script inside a container with:
+
+```bash
+python3 /data/vlms.py
+```
+
+In the YAML example, the `vlms` task uses a `python:3.10` container and runs that command directly after the uplink stage has placed the files in `/data`.

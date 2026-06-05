@@ -1,0 +1,33 @@
+tasks:
+- id: uplink
+  type: dphi.space.cg2.uplink
+  source:
+  - vlm_infer.py
+  - 1768237054.png
+  destination: /
+  volume: liquidai
+- id: pod_run_job
+  pod_name: test
+  type: dphi.space.cg2.pod.run
+  image:
+    name: python
+    tag: 3.10-slim
+  command:
+  - /bin/sh
+  args:
+  - -c
+  - "python3 /data/vlm_infer.py \\\n  --server http://liquid-3b.dphi-public \\\n \
+    \ --image /data/1768237054.png \\\n  --prompt \"describe this\" \\\n  > /data/liquidai.txt\
+    \ 2>&1\n"
+  node: Mpu
+  volume: liquidai
+  max_duration: 2
+  on_failure: stop
+- id: downlink_results
+  type: dphi.space.cg2.downlink
+  source:
+  - liquidai.txt
+  destination: ./downlink
+  volume: liquidai
+  on_failure: stop
+
